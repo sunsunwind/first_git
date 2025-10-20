@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>🎱 로또 추첨기</title>
+<title>🎱 로또 추첨기 (튕기는 공)</title>
 <style>
 body {
   font-family: 'Segoe UI', sans-serif;
@@ -59,40 +59,31 @@ button:hover { background-color:#218838; }
 .gray { background:#7F8C8D; }
 .green { background:#27AE60; }
 
-/* 추첨기 배경 */
+/* 추첨기 원 */
 .lotto-machine {
   position: relative;
   width: 400px;
-  height: 300px;
+  height: 400px;
   margin: 30px auto;
   background: radial-gradient(circle at 50% 50%, #e0f0ff, #a0d0ff);
   border-radius: 50%;
   overflow: hidden;
   box-shadow: 0 0 30px rgba(0,0,0,0.2);
 }
-
-/* 공 둥둥 애니메이션 */
 .lotto-ball {
   position: absolute;
-  width: 50px; height: 50px;
-  border-radius: 50%;
+  width:50px; height:50px;
+  border-radius:50%;
   display:flex; justify-content:center; align-items:center;
-  font-weight:bold; font-size:18px; color:white;
-  box-shadow:0 2px 5px rgba(0,0,0,0.3);
-  animation: float 3s infinite alternate ease-in-out;
-}
-
-@keyframes float {
-  0% { transform: translateY(0px) rotate(0deg); }
-  50% { transform: translateY(-30px) rotate(10deg); }
-  100% { transform: translateY(0px) rotate(-10deg); }
+  font-weight:bold; font-size:18px;
+  color:white; box-shadow:0 2px 5px rgba(0,0,0,0.3);
 }
 </style>
 </head>
 <body>
 <div class="container">
   <h1>🎱 로또 추첨기</h1>
-  <p>“번호 추천” 버튼을 누르면 5세트 번호가 추첨기에서 둥둥 떠다니며 나타납니다!</p>
+  <p>“번호 추천” 버튼을 누르면 공들이 큰 원 안에서 통통 튕기며 번호가 표시됩니다!</p>
   <button onclick="generateLottoSets()">번호 추천!</button>
 
   <div class="lotto-machine" id="lottoMachine"></div>
@@ -100,6 +91,7 @@ button:hover { background-color:#218838; }
 </div>
 
 <script>
+// 색상 구분
 function getColorClass(num){
   if(num>=1 && num<=10) return 'yellow';
   if(num>=11 && num<=20) return 'red';
@@ -107,44 +99,86 @@ function getColorClass(num){
   if(num>=31 && num<=45) return 'green';
 }
 
-// 추천번호 생성 및 추첨기 애니메이션
+// 추천번호 생성 + 공 튕기기
+let balls=[]; // 공 상태 배열
+let animationId;
+
 function generateLottoSets(){
   const resultContainer = document.getElementById('results');
   resultContainer.innerHTML='';
-
   const machine = document.getElementById('lottoMachine');
   machine.innerHTML=''; // 이전 공 제거
+  balls=[]; 
+  cancelAnimationFrame(animationId);
 
   for(let i=1;i<=5;i++){
-    const numbers = new Set();
+    const numbers=new Set();
     while(numbers.size<6) numbers.add(Math.floor(Math.random()*45)+1);
     const sorted=Array.from(numbers).sort((a,b)=>a-b);
 
     // 카드 표시
-    const card = document.createElement('div');
-    card.className='card';
-    const title = document.createElement('div'); title.textContent=`세트 ${i}`;
-    card.appendChild(title);
+    const card = document.createElement('div'); card.className='card';
+    const title=document.createElement('div'); title.textContent=`세트 ${i}`; card.appendChild(title);
     const numWrap = document.createElement('div'); numWrap.className='numbers';
 
     sorted.forEach(num=>{
-      const ball = document.createElement('div');
-      ball.className=`ball ${getColorClass(num)}`;
-      ball.textContent=num;
+      const ball=document.createElement('div'); 
+      ball.className=`ball ${getColorClass(num)}`; ball.textContent=num;
       numWrap.appendChild(ball);
 
-      // 추첨기 안에 떠다니는 공 생성
-      const floatBall = document.createElement('div');
+      // 튕기는 공 생성
+      const floatBall=document.createElement('div');
       floatBall.className=`lotto-ball ${getColorClass(num)}`;
       floatBall.textContent=num;
-      floatBall.style.left=Math.random()*350+'px';
-      floatBall.style.top=Math.random()*250+'px';
+      // 초기 랜덤 위치 (원 안)
+      const radius=180; // 원 반지름
+      const angle=Math.random()*2*Math.PI;
+      const r=Math.random()*radius*0.7;
+      floatBall.x=200 + r*Math.cos(angle); 
+      floatBall.y=200 + r*Math.sin(angle);
+      // 랜덤 속도
+      floatBall.vx=(Math.random()*4-2);
+      floatBall.vy=(Math.random()*4-2);
+      floatBall.style.left=floatBall.x+'px';
+      floatBall.style.top=floatBall.y+'px';
       machine.appendChild(floatBall);
+      balls.push(floatBall);
     });
 
     card.appendChild(numWrap);
     resultContainer.appendChild(card);
   }
+
+  animateBalls();
+}
+
+// 애니메이션 함수
+function animateBalls(){
+  const radius=180; // 원 반지름
+  balls.forEach(ball=>{
+    ball.x+=ball.vx;
+    ball.y+=ball.vy;
+
+    // 원 중심으로부터 거리 체크
+    const dx=ball.x-200;
+    const dy=ball.y-200;
+    if(Math.sqrt(dx*dx + dy*dy) > radius-25){ // 25 = 공 반지름
+      // 벽에 튕기기 (단순 반사)
+      const angle=Math.atan2(dy, dx);
+      const dist=Math.sqrt(dx*dx + dy*dy);
+      // 위치를 반지름 안쪽으로
+      ball.x=200 + (radius-25)*Math.cos(angle);
+      ball.y=200 + (radius-25)*Math.sin(angle);
+      // 속도 반사
+      ball.vx*=-1;
+      ball.vy*=-1;
+    }
+
+    ball.style.left=ball.x+'px';
+    ball.style.top=ball.y+'px';
+  });
+
+  animationId=requestAnimationFrame(animateBalls);
 }
 </script>
 </body>
