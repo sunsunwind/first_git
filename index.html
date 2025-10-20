@@ -2,11 +2,11 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>🎱 로또 추첨기 (튕기는 공)</title>
+<title>🎱 로또 추첨기 (빠르게 튕기는 공)</title>
 <style>
 body {
   font-family: 'Segoe UI', sans-serif;
-  background: linear-gradient(to right, #e0eafc, #cfdef3);
+  background: #ffffff;
   margin:0; padding:0;
   display:flex; justify-content:center; align-items:flex-start; min-height:100vh;
 }
@@ -21,22 +21,22 @@ body {
   max-width:700px; width:90%;
 }
 
-h1 { margin-bottom:10px; color:#333; }
+h1 { margin-bottom:10px; color:#E57373; }
 p { color:#555; margin-bottom:20px; }
 button {
   padding:12px 25px; font-size:16px;
-  background-color:#28a745; color:white;
+  background-color:#E57373; color:white;
   border:none; border-radius:8px;
   cursor:pointer; transition:0.2s;
 }
-button:hover { background-color:#218838; }
+button:hover { background-color:#D35454; }
 
 .results {
   display:flex; justify-content:center; flex-wrap:wrap; gap:15px; margin-top:20px;
 }
 
 .card {
-  background:#f9f9f9; border-left:6px solid #28a745;
+  background:#fff0f0; border-left:6px solid #E57373;
   padding:15px 20px; border-radius:8px;
   font-size:18px; font-weight:bold; color:#333;
   box-shadow:0 2px 8px rgba(0,0,0,0.08);
@@ -65,7 +65,7 @@ button:hover { background-color:#218838; }
   width: 400px;
   height: 400px;
   margin: 30px auto;
-  background: radial-gradient(circle at 50% 50%, #e0f0ff, #a0d0ff);
+  background: radial-gradient(circle at 50% 50%, #ffeaea, #ffdede);
   border-radius: 50%;
   overflow: hidden;
   box-shadow: 0 0 30px rgba(0,0,0,0.2);
@@ -83,7 +83,7 @@ button:hover { background-color:#218838; }
 <body>
 <div class="container">
   <h1>🎱 로또 추첨기</h1>
-  <p>“번호 추천” 버튼을 누르면 공들이 큰 원 안에서 통통 튕기며 번호가 표시됩니다!</p>
+  <p>“번호 추천” 버튼을 누르면 공들이 원 안에서 빠르게 튕기며 번호가 표시됩니다!</p>
   <button onclick="generateLottoSets()">번호 추천!</button>
 
   <div class="lotto-machine" id="lottoMachine"></div>
@@ -118,7 +118,7 @@ function generateLottoSets(){
 
     // 카드 표시
     const card = document.createElement('div'); card.className='card';
-    const title=document.createElement('div'); title.textContent=`세트 ${i}`; card.appendChild(title);
+    const title = document.createElement('div'); title.textContent=`세트 ${i}`; card.appendChild(title);
     const numWrap = document.createElement('div'); numWrap.className='numbers';
 
     sorted.forEach(num=>{
@@ -130,15 +130,14 @@ function generateLottoSets(){
       const floatBall=document.createElement('div');
       floatBall.className=`lotto-ball ${getColorClass(num)}`;
       floatBall.textContent=num;
-      // 초기 랜덤 위치 (원 안)
       const radius=180; // 원 반지름
       const angle=Math.random()*2*Math.PI;
       const r=Math.random()*radius*0.7;
       floatBall.x=200 + r*Math.cos(angle); 
       floatBall.y=200 + r*Math.sin(angle);
-      // 랜덤 속도
-      floatBall.vx=(Math.random()*4-2);
-      floatBall.vy=(Math.random()*4-2);
+      // 속도 증가 (더 역동적)
+      floatBall.vx=(Math.random()*6-3); // 기존 ±2 → ±3
+      floatBall.vy=(Math.random()*6-3);
       floatBall.style.left=floatBall.x+'px';
       floatBall.style.top=floatBall.y+'px';
       machine.appendChild(floatBall);
@@ -154,24 +153,23 @@ function generateLottoSets(){
 
 // 애니메이션 함수
 function animateBalls(){
-  const radius=180; // 원 반지름
+  const radius=180; 
   balls.forEach(ball=>{
     ball.x+=ball.vx;
     ball.y+=ball.vy;
 
-    // 원 중심으로부터 거리 체크
     const dx=ball.x-200;
     const dy=ball.y-200;
-    if(Math.sqrt(dx*dx + dy*dy) > radius-25){ // 25 = 공 반지름
-      // 벽에 튕기기 (단순 반사)
+    if(Math.sqrt(dx*dx + dy*dy) > radius-25){
       const angle=Math.atan2(dy, dx);
-      const dist=Math.sqrt(dx*dx + dy*dy);
-      // 위치를 반지름 안쪽으로
       ball.x=200 + (radius-25)*Math.cos(angle);
       ball.y=200 + (radius-25)*Math.sin(angle);
-      // 속도 반사
-      ball.vx*=-1;
-      ball.vy*=-1;
+      // 속도 반사, 역동성 증가
+      ball.vx*=-1.1; 
+      ball.vy*=-1.1; 
+      // 속도 최대 제한 ±6
+      ball.vx=Math.max(Math.min(ball.vx,6),-6);
+      ball.vy=Math.max(Math.min(ball.vy,6),-6);
     }
 
     ball.style.left=ball.x+'px';
