@@ -19,7 +19,7 @@
       background-color: white;
       padding: 20px;
       border-radius: 10px;
-      max-width: 600px;
+      max-width: 650px; /* 컨테이너 너비 증가 */
       margin: auto;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
@@ -49,16 +49,45 @@
     label {
       font-weight: bold;
     }
-
-    #amount, #dollarAmount {
-      padding: 5px;
-      margin-top: 5px;
-      margin-bottom: 10px;
-      width: 100%;
-      font-size: 1em;
-      box-sizing: border-box;
-    }
     
+    /* 입력 필드와 버튼을 한 줄에 배치하기 위한 flexbox 컨테이너 */
+    .input-row {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    /* 원화 및 달러 입력 필드 스타일 조정 (가로폭 축소, 높이/폰트 증가) */
+    #amount, #dollarAmount {
+      padding: 10px; /* 높이 증가 */
+      margin-top: 5px;
+      margin-right: 10px;
+      width: 50%; /* 가로 길이 시각적으로 축소 */
+      min-width: 250px; /* 20자리 정도의 최소 너비 확보 */
+      font-size: 1.8em; /* 폰트 크기 증가 */
+      box-sizing: border-box;
+      border: 2px solid #aaa;
+      border-radius: 5px;
+      text-align: right; /* 숫자 오른쪽 정렬 */
+    }
+
+    /* 입력값 지우기 버튼 스타일 */
+    .btn-clear {
+        padding: 10px 15px;
+        background-color: #ff9800;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1em;
+        height: 50px; /* 입력창 높이에 맞춤 */
+        white-space: nowrap;
+    }
+
+    .btn-clear:hover {
+        background-color: #e68900;
+    }
+
     input[type="number"] {
       padding: 5px;
       margin-top: 5px;
@@ -70,6 +99,8 @@
 
     .btn-group {
       margin-top: 10px;
+      display: flex; /* 버튼을 가로로 배치 */
+      flex-wrap: wrap; /* 버튼이 많아지면 줄 바꿈 허용 */
     }
 
     .btn {
@@ -80,6 +111,8 @@
       border-radius: 5px;
       cursor: pointer;
       font-size: 1em;
+      min-width: 70px; /* 버튼 최소 너비 */
+      text-align: center;
     }
 
     .btn-add {
@@ -119,7 +152,10 @@
     <div class="section money-section">
       <h2>💰 원화 금액 입력 (₩)</h2>
       <label for="amount">금액 (₩):</label>
-      <input type="text" id="amount" value="1,000" /> 
+      <div class="input-row">
+        <input type="text" id="amount" value="1,000" /> 
+        <button class="btn btn-clear" id="clearWon">입력값 지우기</button>
+      </div>
 
       <div class="btn-group">
         <button class="btn btn-add" id="add1000">+1,000원</button>
@@ -134,13 +170,18 @@
     <div class="section dollar-section">
       <h2>💵 달러 금액 입력 ($)</h2>
       <label for="dollarAmount">금액 ($):</label>
-      <input type="text" id="dollarAmount" value="10.00" />
+      <div class="input-row">
+        <input type="text" id="dollarAmount" value="10.00" />
+        <button class="btn btn-clear" id="clearDollar">입력값 지우기</button>
+      </div>
 
       <div class="btn-group">
-        <button class="btn btn-add" id="add1Dollar">+1 달러</button>
-        <button class="btn btn-sub" id="sub1Dollar">-1 달러</button>
-        <button class="btn btn-add" id="add100Dollar">+100 달러</button>
-        <button class="btn btn-sub" id="sub100Dollar">-100 달러</button>
+        <button class="btn btn-add" id="add1Dollar">+1 $</button>
+        <button class="btn btn-sub" id="sub1Dollar">-1 $</button>
+        <button class="btn btn-add" id="add10Dollar">+10 $</button>
+        <button class="btn btn-sub" id="sub10Dollar">-10 $</button>
+        <button class="btn btn-add" id="add100Dollar">+100 $</button>
+        <button class="btn btn-sub" id="sub100Dollar">-100 $</button>
       </div>
       
       <div class="result" id="dollarToWonOutput"></div>
@@ -178,26 +219,21 @@
 
     /**
      * 입력된 금액 문자열에서 쉼표를 제거하고 숫자로 변환합니다.
-     * @param {string} id - 입력 필드의 ID
-     * @returns {number} 쉼표가 제거된 숫자 값
      */
     function getCleanValue(id) {
         const amountInput = document.getElementById(id).value;
-        // 쉼표를 제거하고 숫자로 파싱
         let value = parseFloat(amountInput.replace(/,/g, ''));
         return isNaN(value) || value < 0 ? 0 : value;
     }
 
     /**
-     * 입력 필드에 쉼표(천 단위 구분 기호)를 적용합니다. (원화에만 사용)
-     * @param {string} id - 입력 필드의 ID
+     * 입력 필드에 쉼표(천 단위 구분 기호)를 적용합니다.
      */
     function formatInput(id) {
         let value = getCleanValue(id);
         
         if (id === "dollarAmount") {
              // 달러 포맷: 소수점 2자리까지 표시, 쉼표 적용
-             // toLocaleString을 사용하여 소수점 이하 두 자리와 쉼표를 한 번에 처리
              let formatted = value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
              document.getElementById(id).value = formatted;
         } else {
@@ -310,7 +346,6 @@
         const rate = rates.USD;
         const outputDiv = document.getElementById("dollarToWonOutput");
 
-        // 달러 금액을 현재 입력된 값 대신 계산된 포맷으로 표시
         const formattedDollar = dollar.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         
         let resultHTML = `<h3>달러 $${formattedDollar} 환전 (USD 환율: ${rate.toFixed(2).toLocaleString()}원)</h3>`;
@@ -343,9 +378,8 @@
         updateAllOutput();
     });
     
-    // 2. 달러 수동 입력 (수정된 부분: 입력 중에는 포맷팅 미적용)
+    // 2. 달러 수동 입력 (입력 중에는 포맷팅 미적용)
     document.getElementById("dollarAmount").addEventListener("input", function() {
-        // 입력 중에는 강제 포맷팅 없이 값 정리 및 계산만 업데이트
         rawInputUpdate("dollarAmount");
     });
     // 달러 입력 필드를 벗어날 때 (blur) 포맷을 적용하여 깔끔하게 보이기
@@ -355,8 +389,20 @@
         }
     });
 
+    // 3. [입력값 지우기] 버튼 이벤트 (새로 추가)
+    document.getElementById("clearWon").addEventListener("click", () => {
+        document.getElementById("amount").value = "0";
+        formatInput("amount");
+        updateAllOutput();
+    });
+    document.getElementById("clearDollar").addEventListener("click", () => {
+        document.getElementById("dollarAmount").value = "0.00";
+        formatInput("dollarAmount");
+        updateAllOutput();
+    });
 
-    // 3. 원화 버튼 이벤트
+
+    // 4. 원화 버튼 이벤트
     function adjustWonAmount(diff) {
       const input = document.getElementById("amount");
       let value = getCleanValue("amount"); 
@@ -372,7 +418,7 @@
     document.getElementById("add10000").addEventListener("click", () => adjustWonAmount(10000));
     document.getElementById("sub10000").addEventListener("click", () => adjustWonAmount(-10000));
 
-    // 4. 달러 버튼 이벤트
+    // 5. 달러 버튼 이벤트 (단위 조정)
     function adjustDollarAmount(diff) {
       const input = document.getElementById("dollarAmount");
       let value = getCleanValue("dollarAmount"); 
@@ -387,16 +433,18 @@
     
     document.getElementById("add1Dollar").addEventListener("click", () => adjustDollarAmount(1));
     document.getElementById("sub1Dollar").addEventListener("click", () => adjustDollarAmount(-1));
+    document.getElementById("add10Dollar").addEventListener("click", () => adjustDollarAmount(10)); // 10 달러 단위 추가
+    document.getElementById("sub10Dollar").addEventListener("click", () => adjustDollarAmount(-10)); // 10 달러 단위 추가
     document.getElementById("add100Dollar").addEventListener("click", () => adjustDollarAmount(100));
     document.getElementById("sub100Dollar").addEventListener("click", () => adjustDollarAmount(-100));
 
 
-    // 5. 환율 입력 이벤트
+    // 6. 환율 입력 이벤트
     ["usdRate", "jpyRate", "thbRate", "vndRate"].forEach(id => {
       document.getElementById(id).addEventListener("input", updateAllOutput);
     });
 
-    // 6. 초기 실행
+    // 7. 초기 실행
     updateAllOutput();
   </script>
 </body>
