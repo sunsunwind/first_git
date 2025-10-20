@@ -42,7 +42,6 @@
       font-size: 1.1em;
     }
 
-    /* 결과 섹션을 별도의 일반 섹션으로 분리하거나 제거 */
     .rate-section {
       font-size: 1em;
     }
@@ -103,14 +102,13 @@
 
     .result {
       line-height: 1.6;
-      margin-top: 15px; /* 결과와 입력 필드 사이에 간격 추가 */
+      margin-top: 15px;
       padding-top: 10px;
-      border-top: 1px dashed #eee; /* 구분선 추가 */
+      border-top: 1px dashed #eee;
     }
     
-    /* 기존 결과 섹션 스타일 제거 */
     .result-section {
-        display: none; /* 이 섹션은 사용하지 않으므로 숨김 */
+        display: none;
     }
   </style>
 </head>
@@ -150,7 +148,7 @@
 
     <div class="section result-section">
       <h2>📊 환전 결과</h2>
-      </div>
+    </div>
 
     <div class="section rate-section">
       <h2>💱 환율 입력 (1단위 외화당 원화)</h2>
@@ -196,13 +194,15 @@
      */
     function formatInput(id) {
         let value = getCleanValue(id);
+        
         if (id === "dollarAmount") {
-             // 달러는 소수점 2자리까지 표시 (쉼표는 일단 유지)
-             let formatted = value.toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+             // 달러 포맷: 소수점 2자리까지 표시, 쉼표 적용
+             // 쉼표 없이 소수점 2자리로 값을 저장하고 (toFixed(2)), toLocaleString으로 쉼표만 추가
+             let formatted = value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
              document.getElementById(id).value = formatted;
         } else {
-            // 원화는 toLocaleString으로 쉼표 적용
-            document.getElementById(id).value = value.toLocaleString('ko-KR');
+            // 원화 포맷: toLocaleString으로 쉼표 적용 (정수부만)
+            document.getElementById(id).value = value.toLocaleString('ko-KR', { maximumFractionDigits: 0 });
         }
     }
 
@@ -234,13 +234,12 @@
     }
 
     /**
-     * 원화 -> 외화 환전 결과를 업데이트합니다. (원화 입력창 밑에 표시)
+     * 원화 -> 외화 환전 결과를 업데이트합니다.
      */
     function updateWonToForeignOutput() {
       const won = getCleanValue("amount"); 
       const outputDiv = document.getElementById("output");
 
-      // 환전 함수: 환율이 0이면 "환율 오류" 반환
       const convert = (rate, fixed) => {
           if (rate <= 0) {
               return "환율 오류";
@@ -254,31 +253,26 @@
       const thb = convert(rates.THB, false);
       const vnd = convert(rates.VND, false);
 
-      // 결과 문자열 생성
       let output = `<h3>원화 ₩${won.toLocaleString('ko-KR')} 환전 (기준: 1 USD = ${rates.USD.toFixed(2).toLocaleString()}원)</h3>`;
 
-      // 달러 결과
       if (usd === "환율 오류") {
           output += `<p>💵 미국 달러: <strong style="color: red;">${usd}</strong></p>`;
       } else {
           output += `<p>💵 미국 달러: <strong>$${usd}</strong></p>`;
       }
 
-      // 엔화 결과
       if (jpy === "환율 오류") {
           output += `<p>💴 일본 엔화: <strong style="color: red;">${jpy}</strong></p>`;
       } else {
           output += `<p>💴 일본 엔화: <strong>${jpy.toLocaleString('ko-KR')}엔</strong> (${numberToKorean(jpy)} 엔)</p>`;
       }
 
-      // 바트 결과
       if (thb === "환율 오류") {
           output += `<p>🇹🇭 태국 바트: <strong style="color: red;">${thb}</strong></p>`;
       } else {
           output += `<p>🇹🇭 태국 바트: <strong>${thb.toLocaleString('ko-KR')}바트</strong> (${numberToKorean(thb)} 바트)</p>`;
       }
 
-      // 동 결과
       if (vnd === "환율 오류") {
           output += `<p>🇻🇳 베트남 동: <strong style="color: red;">${vnd}</strong></p>`;
       } else {
@@ -289,14 +283,13 @@
     }
     
     /**
-     * 달러 -> 원화 환전 결과를 업데이트합니다. (달러 입력창 밑에 표시)
+     * 달러 -> 원화 환전 결과를 업데이트합니다.
      */
     function updateForeignToWonOutput() {
         const dollar = getCleanValue("dollarAmount");
         const rate = rates.USD;
         const outputDiv = document.getElementById("dollarToWonOutput");
 
-        // 달러 금액을 소수점 2자리까지 깔끔하게 포맷
         const formattedDollar = dollar.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         
         let resultHTML = `<h3>달러 $${formattedDollar} 환전 (USD 환율: ${rate.toFixed(2).toLocaleString()}원)</h3>`;
@@ -304,7 +297,6 @@
         if (rate <= 0) {
             resultHTML += `<p>🇰🇷 원화 금액: <strong style="color: red;">환율 오류 (USD 환율을 0보다 큰 값으로 설정하세요)</strong></p>`;
         } else {
-            // 달러를 원화로 환산: 달러 * 환율
             const wonResult = dollar * rate;
             
             resultHTML += `<p>🇰🇷 원화 금액: <strong>₩${Math.round(wonResult).toLocaleString('ko-KR')}</strong> (약 ${numberToKorean(Math.round(wonResult))} 원)</p>`;
@@ -323,17 +315,32 @@
 
     // --- 이벤트 리스너 설정 ---
 
-    // 1. 원화 수동 입력 (숫자 입력 및 포맷 적용)
+    // 1. 원화 수동 입력
     document.getElementById("amount").addEventListener("input", function() {
+        // 숫자만 허용
         this.value = this.value.replace(/[^0-9]/g, '');
         formatInput("amount");
         updateAllOutput();
     });
     
-    // 2. 달러 수동 입력 (숫자 입력 및 포맷 적용)
+    // 2. 달러 수동 입력 (수정된 부분)
     document.getElementById("dollarAmount").addEventListener("input", function() {
-        this.value = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1'); 
-        formatInput("dollarAmount"); 
+        // 숫자, 소수점만 허용 (첫 소수점 이후의 문자는 모두 제거)
+        let cleanedValue = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
+        
+        // 소수점 셋째 자리 이상 입력 시 자르기
+        let parts = cleanedValue.split('.');
+        if (parts.length > 1 && parts[1].length > 2) {
+            parts[1] = parts[1].substring(0, 2);
+            cleanedValue = parts.join('.');
+        }
+
+        this.value = cleanedValue; // 사용자 입력 필드 업데이트
+        
+        // 포맷 적용 및 전체 출력 업데이트
+        if (cleanedValue !== "") {
+            formatInput("dollarAmount"); 
+        }
         updateAllOutput();
     });
 
