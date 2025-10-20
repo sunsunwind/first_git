@@ -189,7 +189,7 @@
     }
 
     /**
-     * 입력 필드에 쉼표(천 단위 구분 기호)를 적용합니다.
+     * 입력 필드에 쉼표(천 단위 구분 기호)를 적용합니다. (원화에만 사용)
      * @param {string} id - 입력 필드의 ID
      */
     function formatInput(id) {
@@ -197,7 +197,7 @@
         
         if (id === "dollarAmount") {
              // 달러 포맷: 소수점 2자리까지 표시, 쉼표 적용
-             // 쉼표 없이 소수점 2자리로 값을 저장하고 (toFixed(2)), toLocaleString으로 쉼표만 추가
+             // toLocaleString을 사용하여 소수점 이하 두 자리와 쉼표를 한 번에 처리
              let formatted = value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
              document.getElementById(id).value = formatted;
         } else {
@@ -205,6 +205,26 @@
             document.getElementById(id).value = value.toLocaleString('ko-KR', { maximumFractionDigits: 0 });
         }
     }
+    
+    /**
+     * 금액 입력 필드를 포맷팅하지 않고 그대로 두고, 계산만 업데이트합니다.
+     * 이 함수는 수동 입력 시 호출되어 입력 흐름을 방해하지 않습니다.
+     */
+    function rawInputUpdate(id) {
+        // 달러 입력 시 소수점 이하 2자리까지만 허용
+        if (id === "dollarAmount") {
+            const input = document.getElementById(id);
+            let cleanedValue = input.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
+            let parts = cleanedValue.split('.');
+            if (parts.length > 1 && parts[1].length > 2) {
+                parts[1] = parts[1].substring(0, 2);
+                cleanedValue = parts.join('.');
+            }
+            input.value = cleanedValue;
+        }
+        updateAllOutput();
+    }
+
 
     function updateRatesFromInput() {
       rates.USD = parseFloat(document.getElementById("usdRate").value) || 0;
@@ -290,6 +310,7 @@
         const rate = rates.USD;
         const outputDiv = document.getElementById("dollarToWonOutput");
 
+        // 달러 금액을 현재 입력된 값 대신 계산된 포맷으로 표시
         const formattedDollar = dollar.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         
         let resultHTML = `<h3>달러 $${formattedDollar} 환전 (USD 환율: ${rate.toFixed(2).toLocaleString()}원)</h3>`;
@@ -317,31 +338,21 @@
 
     // 1. 원화 수동 입력
     document.getElementById("amount").addEventListener("input", function() {
-        // 숫자만 허용
         this.value = this.value.replace(/[^0-9]/g, '');
-        formatInput("amount");
+        formatInput("amount"); // 원화는 입력 시 포맷 적용
         updateAllOutput();
     });
     
-    // 2. 달러 수동 입력 (수정된 부분)
+    // 2. 달러 수동 입력 (수정된 부분: 입력 중에는 포맷팅 미적용)
     document.getElementById("dollarAmount").addEventListener("input", function() {
-        // 숫자, 소수점만 허용 (첫 소수점 이후의 문자는 모두 제거)
-        let cleanedValue = this.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
-        
-        // 소수점 셋째 자리 이상 입력 시 자르기
-        let parts = cleanedValue.split('.');
-        if (parts.length > 1 && parts[1].length > 2) {
-            parts[1] = parts[1].substring(0, 2);
-            cleanedValue = parts.join('.');
+        // 입력 중에는 강제 포맷팅 없이 값 정리 및 계산만 업데이트
+        rawInputUpdate("dollarAmount");
+    });
+    // 달러 입력 필드를 벗어날 때 (blur) 포맷을 적용하여 깔끔하게 보이기
+    document.getElementById("dollarAmount").addEventListener("blur", function() {
+        if (this.value !== "") {
+            formatInput("dollarAmount");
         }
-
-        this.value = cleanedValue; // 사용자 입력 필드 업데이트
-        
-        // 포맷 적용 및 전체 출력 업데이트
-        if (cleanedValue !== "") {
-            formatInput("dollarAmount"); 
-        }
-        updateAllOutput();
     });
 
 
@@ -368,6 +379,7 @@
       value += diff;
       if (value < 0) value = 0;
       
+      // 버튼은 계산 후 포맷을 강제 적용
       input.value = value.toFixed(2);
       formatInput("dollarAmount");
       updateAllOutput();
