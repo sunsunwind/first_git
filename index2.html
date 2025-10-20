@@ -50,6 +50,16 @@
       font-weight: bold;
     }
 
+    /* 금액 입력 필드를 text로 변경하고 숫자만 허용하도록 스크립트에서 처리 */
+    #amount {
+      padding: 5px;
+      margin-top: 5px;
+      margin-bottom: 10px;
+      width: 100%;
+      font-size: 1em;
+      box-sizing: border-box;
+    }
+    
     input[type="number"] {
       padding: 5px;
       margin-top: 5px;
@@ -100,12 +110,10 @@
   <div class="container">
     <h1>환율 계산기</h1>
 
-    <!-- 💰 금액 입력 -->
     <div class="section money-section">
       <h2>💰 원화 금액 입력</h2>
       <label for="amount">금액 (₩):</label>
-      <input type="number" id="amount" value="1000" />
-
+      <input type="text" id="amount" value="1,000" /> 
       <div class="btn-group">
         <button class="btn btn-add" id="add1000">+1,000원</button>
         <button class="btn btn-sub" id="sub1000">-1,000원</button>
@@ -114,13 +122,11 @@
       </div>
     </div>
 
-    <!-- 📊 결과 출력 -->
     <div class="section result-section">
       <h2>📊 환전 결과</h2>
       <div class="result" id="output"></div>
     </div>
 
-    <!-- 💱 환율 입력 (맨 아래) -->
     <div class="section rate-section">
       <h2>💱 환율 입력 (1단위 외화당 원화)</h2>
       <p style="font-size: 0.95em; color: #666;">예: 1달러 = 1350원 ➤ <strong>1350</strong> 입력</p>
@@ -147,6 +153,26 @@
       VND: 0.056
     };
 
+    /**
+     * 입력된 원화 금액 문자열에서 쉼표를 제거하고 숫자로 변환합니다.
+     */
+    function getCleanWonValue() {
+        const amountInput = document.getElementById("amount").value;
+        // 쉼표를 제거하고 숫자로 파싱
+        let won = parseFloat(amountInput.replace(/,/g, ''));
+        return isNaN(won) || won < 0 ? 0 : won;
+    }
+
+    /**
+     * 원화 입력 필드에 쉼표(천 단위 구분 기호)를 적용합니다.
+     */
+    function formatWonInput() {
+        let value = getCleanWonValue();
+        // 숫자에 쉼표를 적용하고 input 필드에 다시 설정
+        document.getElementById("amount").value = value.toLocaleString('ko-KR');
+    }
+
+
     function updateRatesFromInput() {
       rates.USD = parseFloat(document.getElementById("usdRate").value) || 0;
       rates.JPY = parseFloat(document.getElementById("jpyRate").value) || 0;
@@ -158,13 +184,16 @@
       const units = ["", "만", "억", "조", "경"];
       let result = "";
       let unit = 0;
+      let tempNumber = number;
 
-      while (number > 0) {
-        const part = number % 10000;
+      if (tempNumber === 0) return "0";
+
+      while (tempNumber > 0) {
+        const part = tempNumber % 10000;
         if (part > 0) {
           result = part.toLocaleString('ko-KR') + units[unit] + " " + result;
         }
-        number = Math.floor(number / 10000);
+        tempNumber = Math.floor(tempNumber / 10000);
         unit++;
       }
 
@@ -173,36 +202,72 @@
 
     function updateOutput() {
       updateRatesFromInput();
+      const won = getCleanWonValue(); // 쉼표 제거된 숫자 금액 가져오기
 
-      let won = parseFloat(document.getElementById("amount").value);
-      if (isNaN(won) || won < 0) won = 0;
+      // 환전 함수: 환율이 0이면 "환율 오류" 반환
+      const convert = (rate, fixed) => {
+          if (rate <= 0) {
+              return "환율 오류";
+          }
+          const result = won / rate;
+          return fixed ? result.toFixed(fixed) : Math.floor(result);
+      };
 
-      const usd = (won / rates.USD).toFixed(2);
-      const jpy = Math.floor(won / rates.JPY);
-      const thb = Math.floor(won / rates.THB);
-      const vnd = Math.floor(won / rates.VND);
+      const usd = convert(rates.USD, 2);
+      const jpy = convert(rates.JPY, false);
+      const thb = convert(rates.THB, false);
+      const vnd = convert(rates.VND, false);
 
-      const output = `
-        <p>💵 미국 달러: <strong>$${usd}</strong></p>
-        <p>💴 일본 엔화: <strong>${jpy}엔</strong> (${numberToKorean(jpy)} 엔)</p>
-        <p>🇹🇭 태국 바트: <strong>${thb}바트</strong> (${numberToKorean(thb)} 바트)</p>
-        <p>🇻🇳 베트남 동: <strong>${vnd}동</strong> (${numberToKorean(vnd)} 동)</p>
-      `;
+      // 결과 문자열 생성
+      let output = '';
+
+      // 달러 결과
+      if (usd === "환율 오류") {
+          output += `<p>💵 미국 달러: <strong style="color: red;">${usd}</strong></p>`;
+      } else {
+          output += `<p>💵 미국 달러: <strong>$${usd}</strong></p>`;
+      }
+
+      // 엔화 결과
+      if (jpy === "환율 오류") {
+          output += `<p>💴 일본 엔화: <strong style="color: red;">${jpy}</strong></p>`;
+      } else {
+          output += `<p>💴 일본 엔화: <strong>${jpy.toLocaleString('ko-KR')}엔</strong> (${numberToKorean(jpy)} 엔)</p>`;
+      }
+
+      // 바트 결과
+      if (thb === "환율 오류") {
+          output += `<p>🇹🇭 태국 바트: <strong style="color: red;">${thb}</strong></p>`;
+      } else {
+          output += `<p>🇹🇭 태국 바트: <strong>${thb.toLocaleString('ko-KR')}바트</strong> (${numberToKorean(thb)} 바트)</p>`;
+      }
+
+      // 동 결과
+      if (vnd === "환율 오류") {
+          output += `<p>🇻🇳 베트남 동: <strong style="color: red;">${vnd}</strong></p>`;
+      } else {
+          output += `<p>🇻🇳 베트남 동: <strong>${vnd.toLocaleString('ko-KR')}동</strong> (${numberToKorean(vnd)} 동)</p>`;
+      }
 
       document.getElementById("output").innerHTML = output;
     }
 
-    // 수동 금액 입력
-    document.getElementById("amount").addEventListener("input", updateOutput);
+    // 1. 수동 금액 입력 (숫자 입력 및 포맷 적용)
+    document.getElementById("amount").addEventListener("input", function() {
+        // 숫자 외의 문자를 제거하고 포맷 적용
+        this.value = this.value.replace(/[^0-9]/g, '');
+        formatWonInput();
+        updateOutput();
+    });
 
-    // 버튼 이벤트
+    // 2. 버튼 이벤트
     function adjustAmount(diff) {
       const input = document.getElementById("amount");
-      let value = parseFloat(input.value);
-      if (isNaN(value)) value = 0;
+      let value = getCleanWonValue(); // 쉼표 제거된 값으로 계산
       value += diff;
       if (value < 0) value = 0;
-      input.value = value;
+      
+      input.value = value.toLocaleString('ko-KR'); // 쉼표 적용하여 다시 설정
       updateOutput();
     }
 
@@ -211,11 +276,12 @@
     document.getElementById("add10000").addEventListener("click", () => adjustAmount(10000));
     document.getElementById("sub10000").addEventListener("click", () => adjustAmount(-10000));
 
-    // 환율 입력 이벤트
+    // 3. 환율 입력 이벤트
     ["usdRate", "jpyRate", "thbRate", "vndRate"].forEach(id => {
       document.getElementById(id).addEventListener("input", updateOutput);
     });
 
+    // 4. 초기 실행
     updateOutput();
   </script>
 </body>
