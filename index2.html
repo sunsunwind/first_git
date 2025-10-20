@@ -19,11 +19,34 @@
       background-color: white;
       padding: 20px;
       border-radius: 10px;
-      max-width: 650px; /* 컨테이너 너비 증가 */
+      max-width: 1000px; /* 전체 너비 확장 */
       margin: auto;
       box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
+    
+    /* 메인 계산 영역과 환율 입력 영역을 가로로 배치 */
+    .main-content {
+        display: flex;
+        gap: 20px; /* 섹션 간격 */
+    }
 
+    /* 원화/달러 입력 섹션들이 포함된 왼쪽 영역 */
+    .left-panel {
+        flex: 3; /* 원화/달러 영역을 더 넓게 */
+        min-width: 450px;
+    }
+
+    /* 환율 입력 영역 (오른쪽) */
+    .rate-section {
+        flex: 2; /* 환율 영역을 좁게 */
+        border: 1px solid #ccc;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        font-size: 1em;
+        align-self: flex-start; /* 내용을 기준으로 높이 설정 */
+    }
+    
     .section {
       border: 1px solid #ccc;
       padding: 15px;
@@ -42,53 +65,48 @@
       font-size: 1.1em;
     }
 
-    .rate-section {
-      font-size: 1em;
-    }
-
     label {
       font-weight: bold;
     }
     
-    /* 입력 필드와 버튼을 한 줄에 배치하기 위한 flexbox 컨테이너 */
     .input-row {
         display: flex;
         align-items: center;
         margin-bottom: 10px;
     }
 
-    /* 원화 및 달러 입력 필드 스타일 조정 (가로폭 축소, 높이/폰트 증가) */
     #amount, #dollarAmount {
-      padding: 10px; /* 높이 증가 */
+      padding: 10px;
       margin-top: 5px;
       margin-right: 10px;
-      width: 50%; /* 가로 길이 시각적으로 축소 */
-      min-width: 250px; /* 20자리 정도의 최소 너비 확보 */
-      font-size: 1.8em; /* 폰트 크기 증가 */
+      width: 100%; 
+      max-width: 300px; /* 입력 필드 최대 너비 제한 */
+      font-size: 1.8em;
       box-sizing: border-box;
       border: 2px solid #aaa;
       border-radius: 5px;
-      text-align: right; /* 숫자 오른쪽 정렬 */
+      text-align: right;
     }
 
-    /* 입력값 지우기 버튼 스타일 */
+    /* 입력값 지우기 버튼 스타일 (노란색 -> 회색으로 변경) */
     .btn-clear {
         padding: 10px 15px;
-        background-color: #ff9800;
+        background-color: #9e9e9e; /* 회색 계열 */
         color: white;
         border: none;
         border-radius: 5px;
         cursor: pointer;
         font-size: 1em;
-        height: 50px; /* 입력창 높이에 맞춤 */
+        height: 50px;
         white-space: nowrap;
     }
 
     .btn-clear:hover {
-        background-color: #e68900;
+        background-color: #757575;
     }
 
-    input[type="number"] {
+    /* 환율 입력 필드의 스타일 */
+    .rate-section input[type="number"] {
       padding: 5px;
       margin-top: 5px;
       margin-bottom: 10px;
@@ -99,8 +117,8 @@
 
     .btn-group {
       margin-top: 10px;
-      display: flex; /* 버튼을 가로로 배치 */
-      flex-wrap: wrap; /* 버튼이 많아지면 줄 바꿈 허용 */
+      display: flex;
+      flex-wrap: wrap;
     }
 
     .btn {
@@ -111,7 +129,7 @@
       border-radius: 5px;
       cursor: pointer;
       font-size: 1em;
-      min-width: 70px; /* 버튼 최소 너비 */
+      min-width: 70px;
       text-align: center;
     }
 
@@ -148,64 +166,68 @@
 <body>
   <div class="container">
     <h1>환율 계산기</h1>
+    
+    <div class="main-content">
+        <div class="left-panel">
+            <div class="section money-section">
+              <h2>💰 원화 금액 입력 (₩)</h2>
+              <label for="amount">금액 (₩):</label>
+              <div class="input-row">
+                <input type="text" id="amount" value="1,000" /> 
+                <button class="btn btn-clear" id="clearWon">입력값 지우기</button>
+              </div>
 
-    <div class="section money-section">
-      <h2>💰 원화 금액 입력 (₩)</h2>
-      <label for="amount">금액 (₩):</label>
-      <div class="input-row">
-        <input type="text" id="amount" value="1,000" /> 
-        <button class="btn btn-clear" id="clearWon">입력값 지우기</button>
-      </div>
+              <div class="btn-group">
+                <button class="btn btn-add" id="add1000">+1,000원</button>
+                <button class="btn btn-sub" id="sub1000">-1,000원</button>
+                <button class="btn btn-add" id="add10000">+10,000원</button>
+                <button class="btn btn-sub" id="sub10000">-10,000원</button>
+              </div>
+              
+              <div class="result" id="output"></div>
+            </div>
+            
+            <div class="section dollar-section">
+              <h2>💵 달러 금액 입력 ($)</h2>
+              <label for="dollarAmount">금액 ($):</label>
+              <div class="input-row">
+                <input type="text" id="dollarAmount" value="10.00" />
+                <button class="btn btn-clear" id="clearDollar">입력값 지우기</button>
+              </div>
 
-      <div class="btn-group">
-        <button class="btn btn-add" id="add1000">+1,000원</button>
-        <button class="btn btn-sub" id="sub1000">-1,000원</button>
-        <button class="btn btn-add" id="add10000">+10,000원</button>
-        <button class="btn btn-sub" id="sub10000">-10,000원</button>
-      </div>
-      
-      <div class="result" id="output"></div>
+              <div class="btn-group">
+                <button class="btn btn-add" id="add1Dollar">+1 $</button>
+                <button class="btn btn-sub" id="sub1Dollar">-1 $</button>
+                <button class="btn btn-add" id="add10Dollar">+10 $</button>
+                <button class="btn btn-sub" id="sub10Dollar">-10 $</button>
+                <button class="btn btn-add" id="add100Dollar">+100 $</button>
+                <button class="btn btn-sub" id="sub100Dollar">-100 $</button>
+              </div>
+              
+              <div class="result" id="dollarToWonOutput"></div>
+            </div>
+        </div>
+        
+        <div class="rate-section">
+          <h2>💱 환율 입력 (1단위 외화당 원화)</h2>
+          <p style="font-size: 0.95em; color: #666;">예: 1달러 = 1350원 ➤ <strong>1350</strong> 입력</p>
+
+          <label for="usdRate">미국 달러 (1 USD = 몇 원?)</label>
+          <input type="number" id="usdRate" value="1350" step="0.01" />
+
+          <label for="jpyRate">일본 엔화 (1 JPY = 몇 원?)</label>
+          <input type="number" id="jpyRate" value="9.1" step="0.01" />
+
+          <label for="thbRate">태국 바트 (1 THB = 몇 원?)</label>
+          <input type="number" id="thbRate" value="36" step="0.01" />
+
+          <label for="vndRate">베트남 동 (1 VND = 몇 원?)</label>
+          <input type="number" id="vndRate" value="0.056" step="0.001" />
+        </div>
     </div>
     
-    <div class="section dollar-section">
-      <h2>💵 달러 금액 입력 ($)</h2>
-      <label for="dollarAmount">금액 ($):</label>
-      <div class="input-row">
-        <input type="text" id="dollarAmount" value="10.00" />
-        <button class="btn btn-clear" id="clearDollar">입력값 지우기</button>
-      </div>
-
-      <div class="btn-group">
-        <button class="btn btn-add" id="add1Dollar">+1 $</button>
-        <button class="btn btn-sub" id="sub1Dollar">-1 $</button>
-        <button class="btn btn-add" id="add10Dollar">+10 $</button>
-        <button class="btn btn-sub" id="sub10Dollar">-10 $</button>
-        <button class="btn btn-add" id="add100Dollar">+100 $</button>
-        <button class="btn btn-sub" id="sub100Dollar">-100 $</button>
-      </div>
-      
-      <div class="result" id="dollarToWonOutput"></div>
-    </div>
-
     <div class="section result-section">
       <h2>📊 환전 결과</h2>
-    </div>
-
-    <div class="section rate-section">
-      <h2>💱 환율 입력 (1단위 외화당 원화)</h2>
-      <p style="font-size: 0.95em; color: #666;">예: 1달러 = 1350원 ➤ <strong>1350</strong> 입력</p>
-
-      <label for="usdRate">미국 달러 (1 USD = 몇 원?)</label>
-      <input type="number" id="usdRate" value="1350" step="0.01" />
-
-      <label for="jpyRate">일본 엔화 (1 JPY = 몇 원?)</label>
-      <input type="number" id="jpyRate" value="9.1" step="0.01" />
-
-      <label for="thbRate">태국 바트 (1 THB = 몇 원?)</label>
-      <input type="number" id="thbRate" value="36" step="0.01" />
-
-      <label for="vndRate">베트남 동 (1 VND = 몇 원?)</label>
-      <input type="number" id="vndRate" value="0.056" step="0.001" />
     </div>
   </div>
 
@@ -233,21 +255,17 @@
         let value = getCleanValue(id);
         
         if (id === "dollarAmount") {
-             // 달러 포맷: 소수점 2자리까지 표시, 쉼표 적용
              let formatted = value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
              document.getElementById(id).value = formatted;
         } else {
-            // 원화 포맷: toLocaleString으로 쉼표 적용 (정수부만)
             document.getElementById(id).value = value.toLocaleString('ko-KR', { maximumFractionDigits: 0 });
         }
     }
     
     /**
      * 금액 입력 필드를 포맷팅하지 않고 그대로 두고, 계산만 업데이트합니다.
-     * 이 함수는 수동 입력 시 호출되어 입력 흐름을 방해하지 않습니다.
      */
     function rawInputUpdate(id) {
-        // 달러 입력 시 소수점 이하 2자리까지만 허용
         if (id === "dollarAmount") {
             const input = document.getElementById(id);
             let cleanedValue = input.value.replace(/[^0-9.]/g, '').replace(/(\..*)\./g, '$1');
@@ -374,7 +392,7 @@
     // 1. 원화 수동 입력
     document.getElementById("amount").addEventListener("input", function() {
         this.value = this.value.replace(/[^0-9]/g, '');
-        formatInput("amount"); // 원화는 입력 시 포맷 적용
+        formatInput("amount");
         updateAllOutput();
     });
     
@@ -389,7 +407,7 @@
         }
     });
 
-    // 3. [입력값 지우기] 버튼 이벤트 (새로 추가)
+    // 3. [입력값 지우기] 버튼 이벤트
     document.getElementById("clearWon").addEventListener("click", () => {
         document.getElementById("amount").value = "0";
         formatInput("amount");
@@ -425,7 +443,6 @@
       value += diff;
       if (value < 0) value = 0;
       
-      // 버튼은 계산 후 포맷을 강제 적용
       input.value = value.toFixed(2);
       formatInput("dollarAmount");
       updateAllOutput();
@@ -433,8 +450,8 @@
     
     document.getElementById("add1Dollar").addEventListener("click", () => adjustDollarAmount(1));
     document.getElementById("sub1Dollar").addEventListener("click", () => adjustDollarAmount(-1));
-    document.getElementById("add10Dollar").addEventListener("click", () => adjustDollarAmount(10)); // 10 달러 단위 추가
-    document.getElementById("sub10Dollar").addEventListener("click", () => adjustDollarAmount(-10)); // 10 달러 단위 추가
+    document.getElementById("add10Dollar").addEventListener("click", () => adjustDollarAmount(10));
+    document.getElementById("sub10Dollar").addEventListener("click", () => adjustDollarAmount(-10));
     document.getElementById("add100Dollar").addEventListener("click", () => adjustDollarAmount(100));
     document.getElementById("sub100Dollar").addEventListener("click", () => adjustDollarAmount(-100));
 
