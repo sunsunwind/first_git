@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>환율 계산기</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 30px;
+      background-color: #f4f4f4;
+    }
+
+    h1 {
+      color: #333;
+      text-align: center;
+    }
+
+    .container {
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      max-width: 600px;
+      margin: auto;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .section {
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+    }
+
+    .section h2 {
+      font-size: 1.2em;
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .money-section,
+    .result-section {
+      font-size: 1.1em;
+    }
+
+    .rate-section {
+      font-size: 1em;
+    }
+
+    label {
+      font-weight: bold;
+    }
+
+    input[type="number"] {
+      padding: 5px;
+      margin-top: 5px;
+      margin-bottom: 10px;
+      width: 100%;
+      font-size: 1em;
+      box-sizing: border-box;
+    }
+
+    .btn-group {
+      margin-top: 10px;
+    }
+
+    .btn {
+      padding: 10px 15px;
+      margin-right: 10px;
+      margin-bottom: 10px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1em;
+    }
+
+    .btn-add {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    .btn-add:hover {
+      background-color: #45a049;
+    }
+
+    .btn-sub {
+      background-color: #e53935;
+      color: white;
+    }
+
+    .btn-sub:hover {
+      background-color: #c62828;
+    }
+
+    .result {
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>환율 계산기</h1>
+
+    <!-- 💰 금액 입력 -->
+    <div class="section money-section">
+      <h2>💰 원화 금액 입력</h2>
+      <label for="amount">금액 (₩):</label>
+      <input type="number" id="amount" value="1000" />
+
+      <div class="btn-group">
+        <button class="btn btn-add" id="add1000">+1,000원</button>
+        <button class="btn btn-sub" id="sub1000">-1,000원</button>
+        <button class="btn btn-add" id="add10000">+10,000원</button>
+        <button class="btn btn-sub" id="sub10000">-10,000원</button>
+      </div>
+    </div>
+
+    <!-- 📊 결과 출력 -->
+    <div class="section result-section">
+      <h2>📊 환전 결과</h2>
+      <div class="result" id="output"></div>
+    </div>
+
+    <!-- 💱 환율 입력 (맨 아래) -->
+    <div class="section rate-section">
+      <h2>💱 환율 입력 (1단위 외화당 원화)</h2>
+      <p style="font-size: 0.95em; color: #666;">예: 1달러 = 1350원 ➤ <strong>1350</strong> 입력</p>
+
+      <label for="usdRate">미국 달러 (1 USD = 몇 원?)</label>
+      <input type="number" id="usdRate" value="1350" step="0.01" />
+
+      <label for="jpyRate">일본 엔화 (1 JPY = 몇 원?)</label>
+      <input type="number" id="jpyRate" value="9.1" step="0.01" />
+
+      <label for="thbRate">태국 바트 (1 THB = 몇 원?)</label>
+      <input type="number" id="thbRate" value="36" step="0.01" />
+
+      <label for="vndRate">베트남 동 (1 VND = 몇 원?)</label>
+      <input type="number" id="vndRate" value="0.056" step="0.001" />
+    </div>
+  </div>
+
+  <script>
+    const rates = {
+      USD: 1350,
+      JPY: 9.1,
+      THB: 36,
+      VND: 0.056
+    };
+
+    function updateRatesFromInput() {
+      rates.USD = parseFloat(document.getElementById("usdRate").value) || 0;
+      rates.JPY = parseFloat(document.getElementById("jpyRate").value) || 0;
+      rates.THB = parseFloat(document.getElementById("thbRate").value) || 0;
+      rates.VND = parseFloat(document.getElementById("vndRate").value) || 0;
+    }
+
+    function numberToKorean(number) {
+      const units = ["", "만", "억", "조", "경"];
+      let result = "";
+      let unit = 0;
+
+      while (number > 0) {
+        const part = number % 10000;
+        if (part > 0) {
+          result = part.toLocaleString('ko-KR') + units[unit] + " " + result;
+        }
+        number = Math.floor(number / 10000);
+        unit++;
+      }
+
+      return result.trim();
+    }
+
+    function updateOutput() {
+      updateRatesFromInput();
+
+      let won = parseFloat(document.getElementById("amount").value);
+      if (isNaN(won) || won < 0) won = 0;
+
+      const usd = (won / rates.USD).toFixed(2);
+      const jpy = Math.floor(won / rates.JPY);
+      const thb = Math.floor(won / rates.THB);
+      const vnd = Math.floor(won / rates.VND);
+
+      const output = `
+        <p>💵 미국 달러: <strong>$${usd}</strong></p>
+        <p>💴 일본 엔화: <strong>${jpy}엔</strong> (${numberToKorean(jpy)} 엔)</p>
+        <p>🇹🇭 태국 바트: <strong>${thb}바트</strong> (${numberToKorean(thb)} 바트)</p>
+        <p>🇻🇳 베트남 동: <strong>${vnd}동</strong> (${numberToKorean(vnd)} 동)</p>
+      `;
+
+      document.getElementById("output").innerHTML = output;
+    }
+
+    // 수동 금액 입력
+    document.getElementById("amount").addEventListener("input", updateOutput);
+
+    // 버튼 이벤트
+    function adjustAmount(diff) {
+      const input = document.getElementById("amount");
+      let value = parseFloat(input.value);
+      if (isNaN(value)) value = 0;
+      value += diff;
+      if (value < 0) value = 0;
+      input.value = value;
+      updateOutput();
+    }
+
+    document.getElementById("add1000").addEventListener("click", () => adjustAmount(1000));
+    document.getElementById("sub1000").addEventListener("click", () => adjustAmount(-1000));
+    document.getElementById("add10000").addEventListener("click", () => adjustAmount(10000));
+    document.getElementById("sub10000").addEventListener("click", () => adjustAmount(-10000));
+
+    // 환율 입력 이벤트
+    ["usdRate", "jpyRate", "thbRate", "vndRate"].forEach(id => {
+      document.getElementById(id).addEventListener("input", updateOutput);
+    });
+
+    updateOutput();
+  </script>
+</body>
+</html>
