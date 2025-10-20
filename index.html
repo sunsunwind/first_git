@@ -1,249 +1,144 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <title>로또 번호 추천기 (5세트)</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: linear-gradient(to right, #e0eafc, #cfdef3);
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      min-height: 100vh;
-    }
+<meta charset="UTF-8">
+<title>🎱 로또 번호 추천기</title>
+<style>
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: linear-gradient(to right, #e0eafc, #cfdef3);
+  margin:0; padding:0;
+  display:flex; justify-content:center; align-items:flex-start; min-height:100vh;
+}
+.container {
+  margin-top:50px;
+  background:#fff; padding:40px 30px;
+  border-radius:15px;
+  box-shadow:0 10px 25px rgba(0,0,0,0.1);
+  text-align:center;
+  max-width:700px; width:90%;
+}
+h1 { margin-bottom:10px; color:#333; }
+p { color:#555; margin-bottom:30px; }
+button {
+  padding:14px 30px; font-size:18px;
+  background-color:#28a745; color:white;
+  border:none; border-radius:8px;
+  cursor:pointer; transition:0.2s;
+}
+button:hover { background-color:#218838; }
 
-    .container {
-      margin-top: 50px;
-      background-color: #fff;
-      padding: 40px 30px;
-      border-radius: 15px;
-      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-      text-align: center;
-      max-width: 700px;
-      width: 90%;
-    }
+.results { display:grid; grid-template-columns:1fr; gap:20px; margin-top:30px; }
+.card {
+  background:#f9f9f9; border-left:6px solid #28a745;
+  padding:15px 20px; border-radius:8px;
+  font-size:20px; font-weight:bold; color:#333;
+  box-shadow:0 2px 8px rgba(0,0,0,0.08);
+}
+.numbers { display:flex; justify-content:center; gap:12px; margin-top:10px; flex-wrap:wrap; }
+.ball {
+  border-radius:50%; width:40px; height:40px;
+  display:flex; justify-content:center; align-items:center;
+  font-weight:bold; font-size:16px;
+  color:white; box-shadow:0 2px 5px rgba(0,0,0,0.2);
+}
+/* 색상 규칙 */
+.yellow { background:#FFD700; color:#333; }
+.red { background:#E74C3C; }
+.gray { background:#7F8C8D; }
+.green { background:#27AE60; }
 
-    h1 {
-      margin-bottom: 10px;
-      color: #333;
-    }
-
-    p {
-      color: #555;
-      margin-bottom: 30px;
-    }
-
-    button {
-      padding: 14px 30px;
-      font-size: 18px;
-      background-color: #28a745;
-      color: white;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: background-color 0.2s ease;
-    }
-
-    button:hover {
-      background-color: #218838;
-    }
-
-    .results {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 20px;
-      margin-top: 30px;
-    }
-
-    .card {
-      background-color: #f9f9f9;
-      border-left: 6px solid #28a745;
-      padding: 15px 20px;
-      border-radius: 8px;
-      font-size: 20px;
-      font-weight: bold;
-      color: #333;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
-
-    .numbers {
-      display: flex;
-      justify-content: center;
-      gap: 12px;
-      margin-top: 10px;
-      flex-wrap: wrap;
-    }
-
-    .ball {
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      font-weight: bold;
-      font-size: 16px;
-      color: white;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-    }
-
-    /* 번호 색상 규칙 */
-    .yellow { background: #FFD700; color: #333; }
-    .red { background: #E74C3C; }
-    .gray { background: #7F8C8D; }
-    .green { background: #27AE60; }
-
-    /* 역대 당첨번호 리스트 */
-    .history {
-      margin-top: 50px;
-      text-align: left;
-    }
-
-    .history h2 {
-      color: #333;
-      border-bottom: 2px solid #28a745;
-      padding-bottom: 5px;
-    }
-
-    .history-item {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      margin: 6px 0;
-      font-size: 16px;
-      flex-wrap: wrap;
-    }
-
-    .draw-label {
-      width: 70px;
-      color: #555;
-      font-weight: 600;
-    }
-  </style>
+/* 역대 리스트 */
+.history { margin-top:50px; text-align:left; }
+.history h2 { color:#333; border-bottom:2px solid #28a745; padding-bottom:5px; }
+.history-item { display:flex; align-items:center; gap:10px; margin:6px 0; font-size:16px; flex-wrap:wrap; }
+.draw-label { width:70px; color:#555; font-weight:600; }
+</style>
 </head>
 <body>
-  <div class="container">
-    <h1>🎱 로또 번호 추천기</h1>
-    <p>이번 주 행운의 번호 5세트를 받아보세요!</p>
-    <button onclick="generateLottoSets()">번호 추천!</button>
+<div class="container">
+  <h1>🎱 로또 번호 추천기</h1>
+  <p>이번 주 행운의 번호 5세트를 받아보세요!</p>
+  <button onclick="generateLottoSets()">번호 추천!</button>
 
-    <div class="results" id="results"></div>
+  <div class="results" id="results"></div>
 
-    <div class="history" id="history">
-      <h2>📜 역대 당첨번호 (최근 20회)</h2>
-      <p>불러오는 중...</p>
-    </div>
+  <div class="history" id="history">
+    <h2>📜 역대 당첨번호 (최근 20회)</h2>
+    <p>불러오는 중...</p>
   </div>
+</div>
 
-  <script>
-    // 번호 색상 구분 함수
-    function getColorClass(num) {
-      if (num >= 1 && num <= 10) return 'yellow';
-      if (num >= 11 && num <= 20) return 'red';
-      if (num >= 21 && num <= 30) return 'gray';
-      if (num >= 31 && num <= 45) return 'green';
-    }
+<script>
+function getColorClass(num){
+  if(num>=1 && num<=10) return 'yellow';
+  if(num>=11 && num<=20) return 'red';
+  if(num>=21 && num<=30) return 'gray';
+  if(num>=31 && num<=45) return 'green';
+}
 
-    // 추천번호 생성 함수
-    function generateLottoSets() {
-      const resultContainer = document.getElementById('results');
-      resultContainer.innerHTML = '';
+// 추천번호 생성
+function generateLottoSets(){
+  const resultContainer=document.getElementById('results');
+  resultContainer.innerHTML='';
+  for(let i=1;i<=5;i++){
+    const numbers=new Set();
+    while(numbers.size<6) numbers.add(Math.floor(Math.random()*45)+1);
+    const sorted=Array.from(numbers).sort((a,b)=>a-b);
 
-      for (let i = 1; i <= 5; i++) {
-        const numbers = new Set();
-        while (numbers.size < 6) {
-          numbers.add(Math.floor(Math.random() * 45) + 1);
-        }
+    const card=document.createElement('div'); card.className='card';
+    const title=document.createElement('div'); title.textContent=`세트 ${i}`; card.appendChild(title);
 
-        const sorted = Array.from(numbers).sort((a, b) => a - b);
+    const numWrap=document.createElement('div'); numWrap.className='numbers';
+    sorted.forEach(num=>{
+      const ball=document.createElement('div'); ball.className=`ball ${getColorClass(num)}`; ball.textContent=num;
+      numWrap.appendChild(ball);
+    });
+    card.appendChild(numWrap); resultContainer.appendChild(card);
+  }
+}
 
-        const card = document.createElement('div');
-        card.className = 'card';
+// Node.js 프록시 서버 연동 (최근 20회차)
+async function fetchRecentLottoResults(){
+  const historyContainer=document.getElementById('history');
+  historyContainer.innerHTML='<h2>📜 역대 당첨번호 (최근 20회)</h2>';
 
-        const title = document.createElement('div');
-        title.textContent = `세트 ${i}`;
-        card.appendChild(title);
+  try{
+    // 최신 회차 확인
+    const latestRes=await fetch('http://localhost:3000/api/latest');
+    const latestData=await latestRes.json();
+    if(latestData.returnValue!=='success'){ historyContainer.innerHTML+='<p>데이터 로드 실패</p>'; return; }
 
-        const numberWrapper = document.createElement('div');
-        numberWrapper.className = 'numbers';
+    const latestRound=latestData.drwNo;
+    const rounds=[];
 
-        sorted.forEach(num => {
-          const ball = document.createElement('div');
-          ball.className = `ball ${getColorClass(num)}`;
-          ball.textContent = num;
-          numberWrapper.appendChild(ball);
-        });
-
-        card.appendChild(numberWrapper);
-        resultContainer.appendChild(card);
+    for(let i=0;i<20;i++){
+      const roundNum=latestRound-i;
+      const res=await fetch(`http://localhost:3000/api/lotto/${roundNum}`);
+      const data=await res.json();
+      if(data.returnValue==='success'){
+        const nums=[data.drwtNo1,data.drwtNo2,data.drwtNo3,data.drwtNo4,data.drwtNo5,data.drwtNo6];
+        rounds.push({round:data.drwNo, numbers:nums});
       }
     }
 
-    // ✅ 동행복권 API 연동 (최근 20회차 자동 표시)
-    async function fetchRecentLottoResults() {
-      const historyContainer = document.getElementById('history');
-      historyContainer.innerHTML = '<h2>📜 역대 당첨번호 (최근 20회)</h2>';
+    rounds.forEach(item=>{
+      const div=document.createElement('div'); div.className='history-item';
+      const label=document.createElement('div'); label.className='draw-label'; label.textContent=`${item.round}회`;
+      const numWrap=document.createElement('div'); numWrap.className='numbers';
+      item.numbers.forEach(num=>{
+        const ball=document.createElement('div'); ball.className=`ball ${getColorClass(num)}`; ball.textContent=num;
+        numWrap.appendChild(ball);
+      });
+      div.appendChild(label); div.appendChild(numWrap); historyContainer.appendChild(div);
+    });
+  }catch(err){
+    historyContainer.innerHTML+='<p>데이터 로드 중 오류 발생</p>'; console.error(err);
+  }
+}
 
-      try {
-        // 최신 회차 정보 가져오기
-        const latestRes = await fetch('https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=9999');
-        const latestData = await latestRes.json();
-
-        if (latestData.returnValue !== 'success') {
-          historyContainer.innerHTML += '<p>로또 데이터 로드 실패 😢</p>';
-          return;
-        }
-
-        const latestRound = latestData.drwNo;
-        const rounds = [];
-
-        // 최신 회차부터 최근 20회차까지 반복
-        for (let i = 0; i < 20; i++) {
-          const roundNum = latestRound - i;
-          const res = await fetch(`https://www.dhlottery.co.kr/common.do?method=getLottoNumber&drwNo=${roundNum}`);
-          const data = await res.json();
-          if (data.returnValue === 'success') {
-            const nums = [
-              data.drwtNo1, data.drwtNo2, data.drwtNo3,
-              data.drwtNo4, data.drwtNo5, data.drwtNo6
-            ];
-            rounds.push({ round: data.drwNo, numbers: nums });
-          }
-        }
-
-        // 불러온 데이터 표시
-        rounds.forEach(item => {
-          const div = document.createElement('div');
-          div.className = 'history-item';
-
-          const label = document.createElement('div');
-          label.className = 'draw-label';
-          label.textContent = `${item.round}회`;
-
-          const numWrap = document.createElement('div');
-          numWrap.className = 'numbers';
-          item.numbers.forEach(num => {
-            const ball = document.createElement('div');
-            ball.className = `ball ${getColorClass(num)}`;
-            ball.textContent = num;
-            numWrap.appendChild(ball);
-          });
-
-          div.appendChild(label);
-          div.appendChild(numWrap);
-          historyContainer.appendChild(div);
-        });
-      } catch (err) {
-        historyContainer.innerHTML += '<p>데이터를 불러오는 중 오류가 발생했습니다 😭</p>';
-        console.error(err);
-      }
-    }
-
-    // 페이지 로드 시 자동 실행
-    fetchRecentLottoResults();
-  </script>
+// 페이지 로드 시 실행
+fetchRecentLottoResults();
+</script>
 </body>
 </html>
