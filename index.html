@@ -109,15 +109,14 @@ button:hover {
 <body>
 <div class="container">
   <h1>🍀 로또 추첨기</h1>
-  <p>위에서 공이 떨어지고 튀면서 최종 번호 6개를 결정합니다!</p>
-  <button onclick="startDraw()">🍀 행운의 숫자 뽑기</button>
+  <p>“행운의 숫자 뽑기” 버튼을 누르면 공들이 원 안에서 빠르게 튕기며 번호가 표시됩니다!</p>
+  <button onclick="generateLottoSets()">🍀 행운의 숫자 뽑기</button>
 
   <div class="lotto-machine" id="lottoMachine"></div>
   <div class="results" id="results"></div>
 </div>
 
 <script>
-// 색상 구분
 function getColorClass(num){
   if(num>=1 && num<=10) return 'yellow';
   if(num>=11 && num<=20) return 'red';
@@ -125,95 +124,79 @@ function getColorClass(num){
   if(num>=31 && num<=45) return 'green';
 }
 
+let balls=[];
 let animationId;
-let balls = [];
-let finalNumbers = [];
 
-function startDraw(){
-  const machine = document.getElementById('lottoMachine');
+function generateLottoSets(){
   const resultContainer = document.getElementById('results');
-  machine.innerHTML='';
   resultContainer.innerHTML='';
-  balls=[];
-  finalNumbers=[];
-
-  // 45개 공 생성 (숫자 1~45)
-  for(let i=1;i<=45;i++){
-    const ball = document.createElement('div');
-    ball.className='lotto-ball '+getColorClass(i);
-    ball.textContent=i;
-    ball.x = Math.random()*380 + 20;
-    ball.y = -Math.random()*300; // 위에서 떨어짐
-    ball.vx = (Math.random()*4-2);
-    ball.vy = Math.random()*2+1; // 떨어지는 속도
-    ball.isFinal=false;
-    machine.appendChild(ball);
-    balls.push(ball);
-  }
-
-  animateDraw();
-}
-
-function animateDraw(){
   const machine = document.getElementById('lottoMachine');
-  const radius = 200;
+  machine.innerHTML='';
+  balls=[];
+  cancelAnimationFrame(animationId);
 
-  balls.forEach(ball=>{
-    if(ball.isFinal) return;
+  for(let i=1;i<=5;i++){
+    const numbers=new Set();
+    while(numbers.size<6) numbers.add(Math.floor(Math.random()*45)+1);
+    const sorted=Array.from(numbers).sort((a,b)=>a-b);
 
-    ball.x += ball.vx;
-    ball.y += ball.vy;
-    ball.vy += 0.05; // 중력 느낌
+    // 카드 표시
+    const card = document.createElement('div'); card.className='card';
+    const title = document.createElement('div'); title.textContent=`세트 ${i}`; card.appendChild(title);
+    const numWrap = document.createElement('div'); numWrap.className='numbers';
 
-    // 원 안에서 튕기기
-    const dx = ball.x - radius;
-    const dy = ball.y - radius;
-    const dist = Math.sqrt(dx*dx + dy*dy);
-    if(dist > radius-25){
-      const angle = Math.atan2(dy, dx);
-      ball.x = radius + (radius-25)*Math.cos(angle);
-      ball.y = radius + (radius-25)*Math.sin(angle);
-      ball.vx*=-1;
-      ball.vy*=-0.8; // 튀고 천천히 내려감
-    }
+    sorted.forEach(num=>{
+      const ball=document.createElement('div'); 
+      ball.className=`ball ${getColorClass(num)}`; ball.textContent=num;
+      numWrap.appendChild(ball);
 
-    // 바닥 근처에 도달하면 속도 느려짐
-    if(ball.y > 370){
-      ball.vy*=0.6;
-      ball.vx*=0.98;
-      // 랜덤하게 최종 번호 6개 선택
-      if(finalNumbers.length < 6 && Math.random()<0.01){
-        ball.isFinal=true;
-        finalNumbers.push(parseInt(ball.textContent));
-      }
-    }
+      // 튕기는 공 생성
+      const floatBall=document.createElement('div');
+      floatBall.className=`lotto-ball ${getColorClass(num)}`;
+      floatBall.textContent=num;
+      const radius=190;
+      const angle=Math.random()*2*Math.PI;
+      const r=Math.random()*radius*0.7;
+      floatBall.x=210 + r*Math.cos(angle); 
+      floatBall.y=210 + r*Math.sin(angle);
+      floatBall.vx=(Math.random()*7-3.5); 
+      floatBall.vy=(Math.random()*7-3.5);
+      floatBall.style.left=floatBall.x+'px';
+      floatBall.style.top=floatBall.y+'px';
+      machine.appendChild(floatBall);
+      balls.push(floatBall);
+    });
 
-    ball.style.left = ball.x+'px';
-    ball.style.top = ball.y+'px';
-  });
-
-  // 완료시 카드 생성
-  if(finalNumbers.length>=6){
-    displayResult(finalNumbers.sort((a,b)=>a-b));
-    return;
+    card.appendChild(numWrap);
+    resultContainer.appendChild(card);
   }
 
-  animationId = requestAnimationFrame(animateDraw);
+  animateBalls();
 }
 
-function displayResult(numbers){
-  const resultContainer = document.getElementById('results');
-  const card = document.createElement('div'); card.className='card';
-  const title = document.createElement('div'); title.textContent='최종 번호'; card.appendChild(title);
-  const numWrap = document.createElement('div'); numWrap.className='numbers';
-  numbers.forEach(num=>{
-    const ball=document.createElement('div'); 
-    ball.className='ball '+getColorClass(num);
-    ball.textContent=num;
-    numWrap.appendChild(ball);
+function animateBalls(){
+  const radius=190; 
+  balls.forEach(ball=>{
+    ball.x+=ball.vx;
+    ball.y+=ball.vy;
+
+    const dx=ball.x-210;
+    const dy=ball.y-210;
+    if(Math.sqrt(dx*dx + dy*dy) > radius-25){
+      const angle=Math.atan2(dy, dx);
+      ball.x=210 + (radius-25)*Math.cos(angle);
+      ball.y=210 + (radius-25)*Math.sin(angle);
+      ball.vx*=-1.15; 
+      ball.vy*=-1.15; 
+      ball.vx=Math.max(Math.min(ball.vx,7),-7);
+      ball.vy=Math.max(Math.min(ball.vy,7),-7);
+    }
+
+    ball.style.left=ball.x+'px';
+    ball.style.top=ball.y+'px';
   });
-  card.appendChild(numWrap);
-  resultContainer.appendChild(card);
+
+  animationId=requestAnimationFrame(animateBalls);
 }
 </script>
 </body>
