@@ -3,296 +3,334 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>C 코드 이해하기: 포인터와 배열</title>
+    <title>C 코드 디버깅 시뮬레이션</title>
     <style>
         body {
-            font-family: 'Arial', sans-serif;
-            line-height: 1.6;
-            margin: 20px;
-            background-color: #f4f4f9;
-            color: #333;
+            font-family: 'Consolas', 'Courier New', monospace; /* 디버거 느낌의 폰트 */
+            line-height: 1.5;
+            margin: 0;
+            background-color: #2e3440; /* Nord 테마 배경 */
+            color: #d8dee9;
         }
-        .container {
-            max-width: 900px;
-            margin: auto;
-            background: #fff;
-            padding: 20px 30px;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        .debugger-container {
+            display: flex;
+            height: 100vh;
         }
-        h1 {
-            color: #0056b3;
-            border-bottom: 3px solid #0056b3;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
+        .code-area {
+            flex: 2;
+            padding: 20px;
+            background-color: #3b4252;
+            overflow-y: auto;
+        }
+        .variables-area, .output-area {
+            flex: 1;
+            padding: 20px;
+            border-left: 1px solid #4c566a;
+            overflow-y: auto;
+        }
+        .output-area {
+            flex: 1.5;
+            background-color: #242933; /* 콘솔 배경 */
         }
         h2 {
-            color: #333;
-            border-left: 5px solid #ffcc00;
-            padding-left: 10px;
-            margin-top: 30px;
+            color: #88c0d0;
+            border-bottom: 2px solid #88c0d0;
+            padding-bottom: 5px;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.2em;
         }
         pre {
-            background: #272822;
-            color: #f8f8f2;
-            padding: 15px;
+            background: #2e3440;
+            padding: 10px;
             border-radius: 5px;
             overflow-x: auto;
-            font-size: 1.1em;
+            font-size: 1em;
+            color: #eceff4;
+            margin: 0;
         }
         .code-line {
             display: block;
-            margin-bottom: 10px;
-            padding: 5px;
-            border-radius: 3px;
+            padding: 3px 5px;
             cursor: pointer;
+            border-left: 5px solid transparent;
+            transition: all 0.2s;
         }
         .code-line:hover {
-            background-color: #494a45;
+            background-color: #4c566a;
         }
-        .explanation {
-            background: #e0f7fa;
-            border: 1px solid #b2ebf2;
-            padding: 15px;
-            margin-top: 15px;
-            border-radius: 5px;
-            animation: fadeIn 0.5s;
-        }
-        .highlight {
-            background-color: #f9e2e2;
-            padding: 2px 4px;
-            border-radius: 3px;
+        .active-line {
+            background-color: #a3be8c; /* 활성화된 코드 줄 */
+            color: #2e3440;
+            border-left: 5px solid #bf616a; /* 브레이크포인트 표시 */
             font-weight: bold;
-            color: #c0392b;
-        }
-        .concept-box {
-            margin: 20px 0;
-            padding: 15px;
-            border: 2px dashed #0056b3;
-            border-radius: 8px;
-            background-color: #e3f2fd;
-        }
-        .output {
-            margin-top: 20px;
-            padding: 15px;
-            background: #e6ffe6;
-            border: 2px solid #4CAF50;
-            border-radius: 5px;
-        }
-        .output strong {
-            color: #4CAF50;
         }
 
-        /* 시각화 스타일 */
-        .memory-area {
-            display: flex;
-            gap: 30px;
-            margin-top: 20px;
-            padding: 15px;
-            border: 1px solid #ccc;
-            border-radius: 8px;
-            background-color: #fafafa;
+        /* 변수/메모리 스타일 */
+        .var-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            font-size: 0.9em;
         }
-        .variable-box {
-            padding: 10px;
-            border: 1px solid #000;
-            border-radius: 5px;
-            min-width: 150px;
-            background-color: #fff;
+        .var-table th, .var-table td {
+            border: 1px solid #4c566a;
+            padding: 8px;
+            text-align: left;
         }
-        .array-box {
+        .var-table th {
+            background-color: #434c5e;
+            color: #e5e9f0;
+        }
+        .var-table td.value {
+            color: #a3be8c; /* 값 강조 */
+        }
+        .var-table td.address {
+            color: #b48ead; /* 주소 강조 */
+        }
+        .var-table td.updated {
+            background-color: #5e81ac; /* 업데이트된 값 강조 */
+            font-weight: bold;
+        }
+
+        /* 배열 시각화 */
+        .array-memory {
             display: flex;
-            border: 2px solid #0056b3;
-            border-radius: 5px;
-            overflow: hidden;
+            margin-top: 10px;
         }
         .array-cell {
-            padding: 10px;
-            border-right: 1px solid #ccc;
+            border: 1px solid #4c566a;
+            padding: 5px;
             text-align: center;
-            background-color: #cde6f7;
-            font-weight: bold;
+            width: 30px;
+            background-color: #3b4252;
+            position: relative;
         }
-        .array-cell:last-child {
-            border-right: none;
+        .array-index {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 0.7em;
+            color: #81a1c1;
         }
-        .array-cell.null-term {
-            background-color: #ffcccc;
+        .null-term {
+            background-color: #bf616a;
+            color: #eceff4;
         }
 
+        /* 출력 콘솔 */
+        .console-output {
+            white-space: pre-wrap;
+            color: #a3be8c; /* 출력 텍스트 색상 */
+            border: 1px solid #4c566a;
+            min-height: 150px;
+            padding: 10px;
+            background-color: #2e3440;
+        }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>C 언어 코드 분석: 포인터와 문자열 배열</h1>
+<div class="debugger-container">
 
-    <div class="concept-box">
-        <strong>💡 핵심 개념:</strong>
-        <ul>
-            <li>**문자 배열 ($a[]$):** 문자열을 저장합니다. 자동으로 문자열의 끝을 나타내는 **널 문자 ($\backslash 0$)**를 포함합니다.</li>
-            <li>**포인터 ($*p$):** 다른 변수의 **주소**를 저장하는 변수입니다. 여기서는 문자 배열 $a$의 첫 번째 요소의 주소를 저장합니다.</li>
-            <li>**배열 이름 ($a$):** 특별한 경우를 제외하고는 배열의 **첫 번째 요소의 주소**를 나타냅니다.</li>
-            <li>**$a[0]$ vs $a$:** $a[0]$는 배열의 **첫 번째 값**이고, $a$는 배열의 **시작 주소**입니다.</li>
-            <li>**%s vs %c:**
-                <ul>
-                    <li>$\mathbf{\%s}$는 **주소**를 받아 그 주소부터 **널 문자 ($\backslash 0$)**가 나올 때까지 문자를 **문자열로** 출력합니다.</li>
-                    <li>$\mathbf{\%c}$는 **단일 문자** 값을 출력합니다.</li>
-                </ul>
-            </li>
-        </ul>
+    <div class="code-area">
+        <h2>💻 C 소스 코드</h2>
+        <pre id="code-block">
+<span class="code-line" id="line-0">#include &lt;stdio.h&gt;</span>
+<span class="code-line" id="line-1">int main() {</span>
+<span class="code-line" id="line-2"> char a[] = "Art";</span>
+<span class="code-line" id="line-3"> char *p = NULL;</span>
+<span class="code-line" id="line-4"> p = a;</span>
+<span class="code-line" id="line-5"> int i = 0;</span>
+<span class="code-line" id="line-6"> </span>
+<span class="code-line" id="line-7"> printf("%s\n", a);</span>
+<span class="code-line" id="line-8"> printf("%c\n", *p);</span>
+<span class="code-line" id="line-9"> printf("%c\n", *a);</span>
+<span class="code-line" id="line-10"> printf("%s\n", p);</span>
+<span class="code-line" id="line-11"> </span>
+<span class="code-line" id="line-12"> for(int i=0; a[i] != '\0'; i++)</span>
+<span class="code-line" id="line-13">  printf("%c", a[i]);</span>
+<span class="code-line" id="line-14">}</span>
+        </pre>
     </div>
 
-    <h2>🛠️ C 코드</h2>
-    <pre id="code-block">
-<span class="code-line" id="line-0">// 초기 코드</span>
-<span class="code-line" id="line-1">char a[] = "Art";</span>
-<span class="code-line" id="line-2">char *p = NULL;</span>
-<span class="code-line" id="line-3">p = a;</span>
-<span class="code-line" id="line-4">int i = 0;</span>
-<span class="code-line" id="line-5"> </span>
-<span class="code-line" id="line-6">printf("%s\n", a);</span>
-<span class="code-line" id="line-7">printf("%c\n", *p);</span>
-<span class="code-line" id="line-8">printf("%c\n", *a);</span>
-<span class="code-line" id="line-9">printf("%s\n", p);</span>
-<span class="code-line" id="line-10"> </span>
-<span class="code-line" id="line-11">for(int i=0; a[i] != '\0'; i++)</span>
-<span class="code-line" id="line-12">    printf("%c", a[i]);</span>
-    </pre>
+    <div class="variables-area">
+        <h2>💾 변수 및 메모리 상태</h2>
 
-    <hr>
+        <h3>일반 변수</h3>
+        <table class="var-table">
+            <thead>
+                <tr><th>변수</th><th>타입</th><th>주소 (예)</th><th>값</th></tr>
+            </thead>
+            <tbody>
+                <tr id="var-a-row">
+                    <td>a (배열 이름)</td>
+                    <td>char[4]</td>
+                    <td class="address">1000</td>
+                    <td class="address value">1000 (시작 주소)</td>
+                </tr>
+                <tr id="var-p-row">
+                    <td>p (포인터)</td>
+                    <td>char*</td>
+                    <td class="address">2000</td>
+                    <td class="value">?</td>
+                </tr>
+                <tr id="var-i-row">
+                    <td>i</td>
+                    <td>int</td>
+                    <td class="address">3000</td>
+                    <td class="value">?</td>
+                </tr>
+            </tbody>
+        </table>
 
-    <h2>🔍 단계별 분석 및 메모리 시각화</h2>
-
-    <div class="memory-area">
-        <div class="variable-box">
-            <h4>변수 $p$ (포인터)</h4>
-            <div id="var-p">NULL</div>
+        <h3>배열 a (메모리 상세)</h3>
+        <div class="array-memory">
+            <div class="array-cell"><span class="array-index">0</span><span id="a-0">?</span></div>
+            <div class="array-cell"><span class="array-index">1</span><span id="a-1">?</span></div>
+            <div class="array-cell"><span class="array-index">2</span><span id="a-2">?</span></div>
+            <div class="array-cell null-term"><span class="array-index">3</span><span id="a-3">?</span></div>
         </div>
-        <div class="variable-box">
-            <h4>변수 $i$</h4>
-            <div id="var-i">선언 안됨</div>
+        <small style="color: #8fbcbb;">$p$가 가리키는 곳: <span id="p-target" style="font-weight: bold; color: #ebcb8b;">없음</span></small>
+        
+        <p style="margin-top: 20px; color: #b48ead;">
+            <strong style="color: #bf616a;">포인터/배열 핵심:</strong>
+            <br>a : 배열의 시작 주소 (1000)
+            <br>*a : a[0]의 값 ('A')
+            <br>*p : p가 가리키는 주소의 값 ('A')
+        </p>
+    </div>
+
+    <div class="output-area">
+        <h2>⌨️ 콘솔 출력</h2>
+        <pre class="console-output" id="console-output"></pre>
+        
+        <h2 style="margin-top: 30px;">📢 단계 설명</h2>
+        <div id="step-explanation" style="background-color: #434c5e; padding: 10px; border-radius: 5px; color: #e5e9f0;">
+            <p><strong>시작:</strong> 왼쪽 코드에서 실행할 줄을 클릭하세요.</p>
         </div>
-        <div>
-            <h4>배열 $a$ (메모리)</h4>
-            <div class="array-box">
-                <div class="array-cell" id="a-0">A</div>
-                <div class="array-cell" id="a-1">r</div>
-                <div class="array-cell" id="a-2">t</div>
-                <div class="array-cell null-term" id="a-3">\0</div>
-            </div>
-            <small>주소: [주소 100] [주소 101] [주소 102] [주소 103]</small>
-        </div>
     </div>
 
-
-    <div id="step-explanation">
-        <div class="explanation" id="exp-init">👆 위의 코드 라인을 클릭하여 각 단계를 확인하세요!</div>
-    </div>
-
-    <hr>
-
-    <h2>🖥️ 최종 출력 결과</h2>
-
-    <div class="output">
-        <p>코드를 실행했을 때 터미널에 나타나는 결과입니다:</p>
-        <pre><strong><span id="final-output"></span></strong></pre>
-        <p><strong>설명:</strong></p>
-        <ol>
-            <li>첫 번째 $\mathbf{\%s}$는 배열 $a$의 시작 주소($A$의 위치)부터 $\mathbf{\backslash 0}$가 나올 때까지 읽어 **Art**를 출력합니다.</li>
-            <li>두 번째 $\mathbf{\%c}$는 포인터 $p$가 가리키는 값($*p$)인 **A**를 문자로 출력합니다.</li>
-            <li>세 번째 $\mathbf{\%c}$는 배열 $a$의 시작 주소($*a$는 $a[0]$와 같음)의 값인 **A**를 문자로 출력합니다.</li>
-            <li>네 번째 $\mathbf{\%s}$는 포인터 $p$가 저장하는 주소(배열 $a$의 시작 주소)부터 $\mathbf{\backslash 0}$가 나올 때까지 읽어 **Art**를 출력합니다.</li>
-            <li>$\mathbf{for}$ 반복문은 배열 $a$의 각 문자를 $\mathbf{\backslash 0}$ 전까지 하나씩 읽어 **Art**를 출력합니다. ($\backslash n$이 없어 한 줄에 이어서 출력됩니다.)</li>
-        </ol>
-    </div>
 </div>
 
 <script>
-    const explanations = {
-        'line-1': {
-            text: "<strong>char a[] = \"Art\";</strong> ➡️  'A', 'r', 't' 그리고 **자동으로 널 문자('\\0')**를 포함하는 4칸짜리 문자 배열 <span class='highlight'>a</span>를 선언하고 초기화합니다. 배열 이름 $a$는 배열의 시작 주소 (예: 100)를 가집니다.",
-            updates: { 'var-p': 'NULL', 'var-i': '선언 안됨' }
-        },
+    const EXPLANATIONS = {
         'line-2': {
-            text: "<strong>char *p = NULL;</strong> ➡️ 문자형 데이터를 가리키는 **포인터 변수** <span class='highlight'>p</span>를 선언하고 <span class='highlight'>NULL</span>로 초기화합니다. 포인터는 아직 아무것도 가리키지 않습니다.",
-            updates: { 'var-p': 'NULL' }
+            exp: "<strong>char a[] = \"Art\";</strong> ➡️  문자열 'A', 'r', 't'와 **널 문자('\\0')**를 포함하는 배열 <span style='color:#a3be8c;'>a</span>를 선언하고 초기화합니다. 배열 $a$의 시작 주소는 <span style='color:#b48ead;'>1000</span>입니다.",
+            vars: { 'var-p': '?', 'var-i': '?', 'a-0': 'A', 'a-1': 'r', 'a-2': 't', 'a-3': '\\0' },
+            updateRows: ['var-a-row'],
+            target: '없음'
         },
         'line-3': {
-            text: "<strong>p = a;</strong> ➡️ 포인터 <span class='highlight'>p</span>에 배열 <span class='highlight'>a</span>의 **시작 주소** (예: 100)를 대입합니다. 이제 $p$는 배열 $a$의 첫 번째 요소인 'A'를 가리킵니다.",
-            updates: { 'var-p': '주소 100 (a[0]의 주소)' }
+            exp: "<strong>char *p = NULL;</strong> ➡️ 문자 포인터 <span style='color:#a3be8c;'>p</span>를 선언하고 **NULL** (아무것도 가리키지 않음)로 초기화합니다.",
+            vars: { 'var-p': 'NULL' },
+            updateRows: ['var-p-row'],
+            target: '없음'
         },
         'line-4': {
-            text: "<strong>int i = 0;</strong> ➡️ 정수형 변수 <span class='highlight'>i</span>를 선언하고 <span class='highlight'>0</span>으로 초기화합니다.",
-            updates: { 'var-i': '0' }
+            exp: "<strong>p = a;</strong> ➡️ 포인터 <span style='color:#a3be8c;'>p</span>에 배열 <span style='color:#a3be8c;'>a</span>의 **시작 주소 (1000)**를 대입합니다. 이제 $p$는 배열 $a$의 첫 번째 요소('A')를 가리킵니다.",
+            vars: { 'var-p': '1000 (a[0]의 주소)' },
+            updateRows: ['var-p-row'],
+            target: 'a[0] (A)'
         },
-        'line-6': {
-            text: "<strong>printf(\"%s\\n\", a);</strong> ➡️ $\mathbf{\%s}$ (문자열) 형식으로 출력합니다. 배열 이름 $a$는 배열의 **시작 주소**를 나타냅니다. 출력은 주소부터 $\mathbf{\\0}$가 나올 때까지의 문자열: <span class='highlight'>Art</span>",
-            output: 'Art\n'
+        'line-5': {
+            exp: "<strong>int i = 0;</strong> ➡️ 정수형 변수 <span style='color:#a3be8c;'>i</span>를 선언하고 **0**으로 초기화합니다.",
+            vars: { 'var-i': '0' },
+            updateRows: ['var-i-row'],
+            target: 'a[0] (A)'
         },
         'line-7': {
-            text: "<strong>printf(\"%c\\n\", *p);</strong> ➡️ $\mathbf{\%c}$ (문자) 형식으로 출력합니다. $\mathbf{*p}$는 포인터 $p$가 가리키는 **값**('A'의 주소)을 의미합니다. 출력은: <span class='highlight'>A</span>",
-            output: 'A\n'
+            exp: "<strong>printf(\"%s\\n\", a);</strong> ➡️ $\mathbf{\%s}$는 **주소**($a = 1000$)부터 **널 문자**($\\0$)가 나올 때까지를 문자열로 출력합니다.",
+            output: 'Art\n',
+            target: 'a[0] (A)'
         },
         'line-8': {
-            text: "<strong>printf(\"%c\\n\", *a);</strong> ➡️ $\mathbf{\%c}$ (문자) 형식으로 출력합니다. 배열 이름 $a$를 역참조($*a$)하면, 이는 <span class='highlight'>a[0]</span>와 같아 **첫 번째 요소의 값**을 의미합니다. 출력은: <span class='highlight'>A</span>",
-            output: 'A\n'
+            exp: "<strong>printf(\"%c\\n\", *p);</strong> ➡️ $\mathbf{\%c}$는 **단일 문자** 출력. $\mathbf{*p}$는 $p$가 가리키는 값, 즉 $a[0]$의 값인 **'A'**를 출력합니다.",
+            output: 'A\n',
+            target: 'a[0] (A)'
         },
         'line-9': {
-            text: "<strong>printf(\"%s\\n\", p);</strong> ➡️ $\mathbf{\%s}$ (문자열) 형식으로 출력합니다. 포인터 $p$가 저장하는 **주소**부터 $\mathbf{\\0}$가 나올 때까지의 문자열을 출력합니다. 출력은: <span class='highlight'>Art</span>",
-            output: 'Art\n'
+            exp: "<strong>printf(\"%c\\n\", *a);</strong> ➡️ $\mathbf{*a}$는 배열의 첫 번째 요소 $\mathbf{a[0]}$의 값과 동일합니다. **'A'**를 출력합니다.",
+            output: 'A\n',
+            target: 'a[0] (A)'
         },
-        'line-11': {
-            text: "<strong>for(int i=0; a[i] != '\\0'; i++) ...</strong> ➡️ $i=0$부터 시작하여 $a[i]$가 **널 문자**($'\\0'$)가 아닐 때까지 반복하며, $\mathbf{\%c}$ 형식으로 각 문자를 출력합니다. 출력은: <span class='highlight'>Art</span>",
-            output: 'Art'
+        'line-10': {
+            exp: "<strong>printf(\"%s\\n\", p);</strong> ➡️ $\mathbf{\%s}$는 **주소**($p = 1000$)부터 **널 문자**($\\0$)가 나올 때까지를 문자열로 출력합니다. $p$와 $a$ 모두 동일한 곳을 가리키므로 결과는 같습니다.",
+            output: 'Art\n',
+            target: 'a[0] (A)'
+        },
+        'line-12': {
+            exp: "<strong>for(int i=0; a[i] != '\\0'; i++) ...</strong> ➡️ $i$가 $0$부터 $a[i]$가 **널 문자**가 아닐 때까지 반복하며, $\mathbf{\%c}$ 형식으로 $a[i]$의 문자('A', 'r', 't')를 차례로 출력합니다. (줄바꿈 없음)",
+            output: 'Art',
+            vars: { 'var-i': '3 (반복 후 최종 값)' },
+            updateRows: ['var-i-row'],
+            target: 'a[0] (A)'
         }
     };
 
     const codeLines = document.querySelectorAll('.code-line');
     const explanationDiv = document.getElementById('step-explanation');
-    const varP = document.getElementById('var-p');
-    const varI = document.getElementById('var-i');
-    const finalOutput = document.getElementById('final-output');
-
+    const consoleOutput = document.getElementById('console-output');
+    const pTarget = document.getElementById('p-target');
     let currentOutput = "";
+
+    function resetVariableHighlight() {
+        document.querySelectorAll('.var-table td').forEach(td => td.classList.remove('updated'));
+    }
 
     codeLines.forEach(line => {
         line.addEventListener('click', function() {
             const lineId = this.id;
-            const data = explanations[lineId];
+            const data = EXPLANATIONS[lineId];
 
+            // 코드 하이라이팅
+            document.querySelectorAll('.code-line').forEach(l => l.classList.remove('active-line'));
+            this.classList.add('active-line');
+            
             if (data) {
                 // 설명 업데이트
-                explanationDiv.innerHTML = `<div class="explanation">${data.text}</div>`;
+                explanationDiv.innerHTML = `<p>${data.exp}</p>`;
 
                 // 변수 시각화 업데이트
-                if (data.updates) {
-                    if (data.updates['var-p']) varP.textContent = data.updates['var-p'];
-                    if (data.updates['var-i']) varI.textContent = data.updates['var-i'];
+                resetVariableHighlight();
+                if (data.vars) {
+                    for (const key in data.vars) {
+                        const element = document.getElementById(key);
+                        if (element) {
+                            element.textContent = data.vars[key];
+                            // 변수 테이블 행 업데이트 하이라이팅
+                            if (data.updateRows && data.updateRows.includes(element.closest('tr')?.id)) {
+                                element.classList.add('updated');
+                            }
+                        }
+                    }
                 }
+                
+                // 포인터 타겟 업데이트
+                pTarget.textContent = data.target || '없음';
 
                 // 출력 업데이트
                 if (data.output) {
                     currentOutput += data.output;
-                    finalOutput.innerHTML = currentOutput.replace(/\n/g, '<br>'); // 줄바꿈을 HTML <br>로 변환
+                    consoleOutput.textContent = currentOutput;
                 }
-
-                // 하이라이팅
-                document.querySelectorAll('.code-line').forEach(l => l.style.backgroundColor = 'transparent');
-                this.style.backgroundColor = '#494a45';
+            } else {
+                // #include 등 실행에 직접적인 영향이 없는 라인
+                explanationDiv.innerHTML = `<p><strong>${this.textContent.trim()}</strong> ➡️ 실행에 직접적인 변수 변화나 출력이 없는 초기화/선언 단계입니다.</p>`;
             }
         });
     });
 
     // 초기 상태 설정
     document.addEventListener('DOMContentLoaded', function() {
-        const initialUpdates = explanations['line-1'].updates;
-        varP.textContent = initialUpdates['var-p'];
-        varI.textContent = initialUpdates['var-i'];
-        document.getElementById('a-3').textContent = '\\0'; // 널 문자 명시
-        // 최종 결과 미리 계산하여 초기 로드 시 표시
-        finalOutput.textContent = "Art\nA\nA\nArt\nArt".replace(/\n/g, '\n'); 
-        
+        // 초기 배열/변수 값 설정 (line-2의 초기화 값)
+        const initialData = EXPLANATIONS['line-2'];
+        for (const key in initialData.vars) {
+            const element = document.getElementById(key);
+            if (element) element.textContent = initialData.vars[key];
+        }
+        document.getElementById('var-a-row').querySelector('.value').textContent = '1000 (시작 주소)';
     });
 </script>
 
