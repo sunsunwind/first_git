@@ -3,49 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>C 코드 디버깅 시뮬레이션</title>
+    <title>C 코드 디버깅 시뮬레이션 (모바일 최적화)</title>
     <style>
+        /* 1. 기본 스타일 및 모바일 우선 설정 */
         body {
-            font-family: 'Consolas', 'Courier New', monospace; /* 디버거 느낌의 폰트 */
+            font-family: 'Consolas', 'Courier New', monospace;
             line-height: 1.5;
             margin: 0;
             background-color: #2e3440; /* Nord 테마 배경 */
             color: #d8dee9;
+            padding: 10px;
         }
         .debugger-container {
             display: flex;
-            height: 100vh;
-        }
-        .code-area {
-            flex: 2;
-            padding: 20px;
-            background-color: #3b4252;
-            overflow-y: auto;
-        }
-        .variables-area, .output-area {
-            flex: 1;
-            padding: 20px;
-            border-left: 1px solid #4c566a;
-            overflow-y: auto;
-        }
-        .output-area {
-            flex: 1.5;
-            background-color: #242933; /* 콘솔 배경 */
+            flex-direction: column; /* 모바일: 수직 배치 */
+            gap: 10px;
         }
         h2 {
             color: #88c0d0;
             border-bottom: 2px solid #88c0d0;
             padding-bottom: 5px;
-            margin-top: 0;
-            margin-bottom: 15px;
-            font-size: 1.2em;
+            margin-top: 15px;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+        
+        /* 2. 코드 영역 */
+        .code-area {
+            background-color: #3b4252;
+            padding: 10px;
+            border-radius: 8px;
+            overflow-x: auto; /* 코드 가로 스크롤 가능하게 */
         }
         pre {
             background: #2e3440;
-            padding: 10px;
-            border-radius: 5px;
-            overflow-x: auto;
-            font-size: 1em;
+            padding: 5px;
+            border-radius: 3px;
+            font-size: 0.9em;
             color: #eceff4;
             margin: 0;
         }
@@ -60,22 +54,26 @@
             background-color: #4c566a;
         }
         .active-line {
-            background-color: #a3be8c; /* 활성화된 코드 줄 */
+            background-color: #a3be8c;
             color: #2e3440;
-            border-left: 5px solid #bf616a; /* 브레이크포인트 표시 */
+            border-left: 5px solid #bf616a;
             font-weight: bold;
         }
 
-        /* 변수/메모리 스타일 */
+        /* 3. 변수/메모리 영역 (모바일 최적화) */
+        .variables-area {
+            background-color: #3b4252;
+            padding: 10px;
+            border-radius: 8px;
+        }
         .var-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
-            font-size: 0.9em;
+            font-size: 0.8em;
         }
         .var-table th, .var-table td {
             border: 1px solid #4c566a;
-            padding: 8px;
+            padding: 6px;
             text-align: left;
         }
         .var-table th {
@@ -83,50 +81,65 @@
             color: #e5e9f0;
         }
         .var-table td.value {
-            color: #a3be8c; /* 값 강조 */
-        }
-        .var-table td.address {
-            color: #b48ead; /* 주소 강조 */
+            color: #a3be8c;
+            word-break: break-all; /* 긴 주소값 자동 줄바꿈 */
         }
         .var-table td.updated {
-            background-color: #5e81ac; /* 업데이트된 값 강조 */
+            background-color: #5e81ac;
             font-weight: bold;
         }
-
-        /* 배열 시각화 */
-        .array-memory {
-            display: flex;
-            margin-top: 10px;
-        }
-        .array-cell {
-            border: 1px solid #4c566a;
-            padding: 5px;
-            text-align: center;
-            width: 30px;
-            background-color: #3b4252;
-            position: relative;
-        }
-        .array-index {
-            position: absolute;
-            top: -15px;
-            left: 50%;
-            transform: translateX(-50%);
-            font-size: 0.7em;
-            color: #81a1c1;
-        }
-        .null-term {
-            background-color: #bf616a;
-            color: #eceff4;
+        /* 불필요한 열 모바일에서 숨기기 */
+        .var-table .hide-on-mobile {
+            display: none;
         }
 
-        /* 출력 콘솔 */
+        /* 4. 출력 및 설명 영역 */
+        .output-area {
+            background-color: #242933;
+            padding: 10px;
+            border-radius: 8px;
+        }
         .console-output {
             white-space: pre-wrap;
-            color: #a3be8c; /* 출력 텍스트 색상 */
+            color: #a3be8c;
             border: 1px solid #4c566a;
-            min-height: 150px;
-            padding: 10px;
+            min-height: 80px; /* 모바일에서 높이 줄이기 */
+            padding: 8px;
             background-color: #2e3440;
+            font-size: 0.9em;
+        }
+        #step-explanation {
+            background-color: #434c5e; 
+            padding: 10px; 
+            border-radius: 5px; 
+            color: #e5e9f0;
+            font-size: 0.9em;
+        }
+
+        /* 5. 데스크톱/태블릿 환경 (화면이 768px 이상일 때) */
+        @media (min-width: 768px) {
+            body {
+                padding: 20px;
+            }
+            .debugger-container {
+                flex-direction: row; /* 데스크톱: 수평 배치 */
+                height: 90vh;
+            }
+            .code-area {
+                flex: 2;
+                overflow-y: auto;
+            }
+            .variables-area, .output-area {
+                flex: 1;
+                border-left: 1px solid #4c566a;
+                overflow-y: auto;
+            }
+            .output-area {
+                flex: 1.5;
+            }
+            .var-table .hide-on-mobile {
+                display: table-cell; /* 숨겼던 열 다시 표시 */
+            }
         }
     </style>
 </head>
@@ -135,7 +148,7 @@
 <div class="debugger-container">
 
     <div class="code-area">
-        <h2>💻 C 소스 코드</h2>
+        <h2>💻 C 소스 코드 (클릭하여 실행)</h2>
         <pre id="code-block">
 <span class="code-line" id="line-0">#include &lt;stdio.h&gt;</span>
 <span class="code-line" id="line-1">int main() {</span>
@@ -156,58 +169,60 @@
     </div>
 
     <div class="variables-area">
-        <h2>💾 변수 및 메모리 상태</h2>
+        <h2>💾 변수 상태</h2>
 
-        <h3>일반 변수</h3>
         <table class="var-table">
             <thead>
-                <tr><th>변수</th><th>타입</th><th>주소 (예)</th><th>값</th></tr>
+                <tr>
+                    <th>변수</th>
+                    <th class="hide-on-mobile">타입</th>
+                    <th class="hide-on-mobile">주소</th>
+                    <th>값</th>
+                </tr>
             </thead>
             <tbody>
                 <tr id="var-a-row">
-                    <td>a (배열 이름)</td>
-                    <td>char[4]</td>
-                    <td class="address">1000</td>
+                    <td>a[] (배열)</td>
+                    <td class="hide-on-mobile">char[4]</td>
+                    <td class="address hide-on-mobile">1000</td>
                     <td class="address value">1000 (시작 주소)</td>
                 </tr>
                 <tr id="var-p-row">
                     <td>p (포인터)</td>
-                    <td>char*</td>
-                    <td class="address">2000</td>
+                    <td class="hide-on-mobile">char*</td>
+                    <td class="address hide-on-mobile">2000</td>
                     <td class="value">?</td>
                 </tr>
                 <tr id="var-i-row">
                     <td>i</td>
-                    <td>int</td>
-                    <td class="address">3000</td>
+                    <td class="hide-on-mobile">int</td>
+                    <td class="address hide-on-mobile">3000</td>
                     <td class="value">?</td>
                 </tr>
             </tbody>
         </table>
 
-        <h3>배열 a (메모리 상세)</h3>
+        <h3>배열 a (값)</h3>
         <div class="array-memory">
-            <div class="array-cell"><span class="array-index">0</span><span id="a-0">?</span></div>
-            <div class="array-cell"><span class="array-index">1</span><span id="a-1">?</span></div>
-            <div class="array-cell"><span class="array-index">2</span><span id="a-2">?</span></div>
-            <div class="array-cell null-term"><span class="array-index">3</span><span id="a-3">?</span></div>
+            <div style="display:flex;">
+                <div class="array-cell"><span id="a-0">?</span></div>
+                <div class="array-cell"><span id="a-1">?</span></div>
+                <div class="array-cell"><span id="a-2">?</span></div>
+                <div class="array-cell null-term"><span id="a-3">?</span></div>
+            </div>
+            <small style="color: #8fbcbb; display: block; margin-top: 5px;">
+                p가 가리키는 값: <span id="p-target" style="font-weight: bold; color: #ebcb8b;">없음</span>
+            </small>
         </div>
-        <small style="color: #8fbcbb;">$p$가 가리키는 곳: <span id="p-target" style="font-weight: bold; color: #ebcb8b;">없음</span></small>
         
-        <p style="margin-top: 20px; color: #b48ead;">
-            <strong style="color: #bf616a;">포인터/배열 핵심:</strong>
-            <br>a : 배열의 시작 주소 (1000)
-            <br>*a : a[0]의 값 ('A')
-            <br>*p : p가 가리키는 주소의 값 ('A')
-        </p>
     </div>
 
     <div class="output-area">
         <h2>⌨️ 콘솔 출력</h2>
         <pre class="console-output" id="console-output"></pre>
         
-        <h2 style="margin-top: 30px;">📢 단계 설명</h2>
-        <div id="step-explanation" style="background-color: #434c5e; padding: 10px; border-radius: 5px; color: #e5e9f0;">
+        <h2>📢 단계 설명</h2>
+        <div id="step-explanation">
             <p><strong>시작:</strong> 왼쪽 코드에서 실행할 줄을 클릭하세요.</p>
         </div>
     </div>
@@ -215,6 +230,7 @@
 </div>
 
 <script>
+    // 변수 및 설명 데이터는 이전 코드와 동일하게 사용
     const EXPLANATIONS = {
         'line-2': {
             exp: "<strong>char a[] = \"Art\";</strong> ➡️  문자열 'A', 'r', 't'와 **널 문자('\\0')**를 포함하는 배열 <span style='color:#a3be8c;'>a</span>를 선언하고 초기화합니다. 배열 $a$의 시작 주소는 <span style='color:#b48ead;'>1000</span>입니다.",
@@ -230,7 +246,7 @@
         },
         'line-4': {
             exp: "<strong>p = a;</strong> ➡️ 포인터 <span style='color:#a3be8c;'>p</span>에 배열 <span style='color:#a3be8c;'>a</span>의 **시작 주소 (1000)**를 대입합니다. 이제 $p$는 배열 $a$의 첫 번째 요소('A')를 가리킵니다.",
-            vars: { 'var-p': '1000 (a[0]의 주소)' },
+            vars: { 'var-p': '1000' }, // 모바일에서는 주소만 간단히 표시
             updateRows: ['var-p-row'],
             target: 'a[0] (A)'
         },
@@ -263,7 +279,7 @@
         'line-12': {
             exp: "<strong>for(int i=0; a[i] != '\\0'; i++) ...</strong> ➡️ $i$가 $0$부터 $a[i]$가 **널 문자**가 아닐 때까지 반복하며, $\mathbf{\%c}$ 형식으로 $a[i]$의 문자('A', 'r', 't')를 차례로 출력합니다. (줄바꿈 없음)",
             output: 'Art',
-            vars: { 'var-i': '3 (반복 후 최종 값)' },
+            vars: { 'var-i': '3 (반복 후)' },
             updateRows: ['var-i-row'],
             target: 'a[0] (A)'
         }
@@ -300,7 +316,8 @@
                         if (element) {
                             element.textContent = data.vars[key];
                             // 변수 테이블 행 업데이트 하이라이팅
-                            if (data.updateRows && data.updateRows.includes(element.closest('tr')?.id)) {
+                            const row = element.closest('tr');
+                            if (row && data.updateRows && data.updateRows.includes(row.id)) {
                                 element.classList.add('updated');
                             }
                         }
@@ -314,23 +331,24 @@
                 if (data.output) {
                     currentOutput += data.output;
                     consoleOutput.textContent = currentOutput;
+                    // 스크롤을 가장 아래로 이동 (모바일 사용 편의성)
+                    consoleOutput.scrollTop = consoleOutput.scrollHeight;
                 }
             } else {
                 // #include 등 실행에 직접적인 영향이 없는 라인
-                explanationDiv.innerHTML = `<p><strong>${this.textContent.trim()}</strong> ➡️ 실행에 직접적인 변수 변화나 출력이 없는 초기화/선언 단계입니다.</p>`;
+                explanationDiv.innerHTML = `<p><strong>${this.textContent.trim()}</strong> ➡️ 실행에 직접적인 변수 변화나 출력이 없는 단계입니다.</p>`;
             }
         });
     });
 
     // 초기 상태 설정
     document.addEventListener('DOMContentLoaded', function() {
-        // 초기 배열/변수 값 설정 (line-2의 초기화 값)
         const initialData = EXPLANATIONS['line-2'];
         for (const key in initialData.vars) {
             const element = document.getElementById(key);
             if (element) element.textContent = initialData.vars[key];
         }
-        document.getElementById('var-a-row').querySelector('.value').textContent = '1000 (시작 주소)';
+        document.getElementById('var-a-row').querySelector('.value').textContent = '1000';
     });
 </script>
 
