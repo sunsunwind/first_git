@@ -3,18 +3,22 @@
 <head>
 <meta charset="UTF-8">
 <title>통화 변환</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   body {
     font-family: 'Pretendard', sans-serif;
     background: #f8f9fa;
-    padding: 30px;
+    padding: 20px;
+    max-width: 500px;
+    margin: auto;
   }
 
   .section {
     background: #fff;
     border-radius: 12px;
-    padding: 20px 30px;
-    margin-bottom: 30px;
+    padding: 15px 20px;
+    margin-bottom: 25px;
     box-shadow: 0 3px 10px rgba(0,0,0,0.05);
   }
 
@@ -22,49 +26,50 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 15px;
+    flex-wrap: wrap;
   }
 
   h2 {
     color: #333;
-    margin: 0;
+    font-size: 1.1rem;
+    margin: 0 0 8px 0;
   }
 
   .rate-input {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
   }
 
   .rate-input input {
-    width: 80px;
-    padding: 3px 6px;
+    width: 70px;
+    padding: 3px 5px;
     border-radius: 6px;
     border: 1px solid #ccc;
-  }
-
-  .input-row {
-    margin-bottom: 10px;
   }
 
   input[type="number"] {
-    padding: 6px 10px;
+    padding: 5px 8px;
     border: 1px solid #ccc;
     border-radius: 6px;
-    font-size: 1rem;
-    width: 150px;
+    font-size: 0.95rem;
+    width: 120px;
+  }
+
+  .input-row {
+    margin-bottom: 8px;
   }
 
   .btn-row {
-    margin-top: 8px;
+    margin-top: 6px;
   }
 
   button {
-    padding: 6px 10px;
-    margin: 3px;
+    padding: 5px 8px;
+    margin: 3px 2px;
     border: none;
     border-radius: 6px;
     color: white;
     cursor: pointer;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
   }
 
   .btn-plus { background: #28a745; }
@@ -76,147 +81,145 @@
   .btn-convert { background: #6c757d; }
   .btn-convert:hover { background: #5a6268; }
 
+  .btn-copy { background: #17a2b8; }
+  .btn-copy:hover { background: #138496; }
+
+  .btn-image { background: #ffb100; color: #333; }
+  .btn-image:hover { background: #e0a800; }
+
   .result {
-    font-size: 2rem;
+    font-size: 1.4rem;
     font-weight: 700;
     display: inline-block;
     background: linear-gradient(90deg, #fff79a 0%, #fff79a 100%);
     border-radius: 5px;
-    padding: 5px 10px;
+    padding: 5px 8px;
     transition: background 0.3s ease, transform 0.2s ease;
+    word-break: keep-all;
+  }
+
+  .readable {
+    font-size: 0.9rem;
+    color: #666;
+    margin-left: 5px;
   }
 
   .highlight {
     animation: blink 0.6s ease;
     background: linear-gradient(90deg, #ffe66b 0%, #fff79a 100%);
-    transform: scale(1.1);
+    transform: scale(1.05);
   }
 
   @keyframes blink {
-    0% { background: #fff79a; transform: scale(1.05); }
-    50% { background: #ffe66b; transform: scale(1.15); }
-    100% { background: #fff79a; transform: scale(1.05); }
+    0% { background: #fff79a; transform: scale(1.0); }
+    50% { background: #ffe66b; transform: scale(1.1); }
+    100% { background: #fff79a; transform: scale(1.0); }
+  }
+
+  @media (max-width: 480px) {
+    body { padding: 10px; }
+    h2 { font-size: 1rem; }
+    .section { padding: 12px; }
   }
 </style>
 </head>
 <body>
 
-<!-- 달러 → 원화 -->
-<div class="section">
-  <div class="section-header">
-    <h2>💵 달러 → 원화</h2>
-    <div class="rate-input">
-      기준 환율: <input type="number" id="usdRateInput" value="1429" step="1"> 원/USD
-    </div>
-  </div>
-  <div class="input-row">
-    <input type="number" id="usdInput" placeholder="달러 입력"> USD
-    <button class="btn-convert" onclick="convertToKRW('usd')">변환</button>
-  </div>
-  <div class="btn-row">
-    <button class="btn-plus" onclick="adjustAndConvert('usd', 1)">+1</button>
-    <button class="btn-minus" onclick="adjustAndConvert('usd', -1)">-1</button>
-    <button class="btn-plus" onclick="adjustAndConvert('usd', 10)">+10</button>
-    <button class="btn-minus" onclick="adjustAndConvert('usd', -10)">-10</button>
-    <button class="btn-plus" onclick="adjustAndConvert('usd', 100)">+100</button>
-    <button class="btn-minus" onclick="adjustAndConvert('usd', -100)">-100</button>
-  </div>
-  <div>결과: <span id="usdResult" class="result">0 원</span></div>
-</div>
-
-<!-- 엔화 → 원화 -->
-<div class="section">
-  <div class="section-header">
-    <h2>💴 엔화 → 원화</h2>
-    <div class="rate-input">
-      기준 환율: <input type="number" id="jpyRateInput" value="9.42" step="0.01"> 원/JPY
-    </div>
-  </div>
-  <div class="input-row">
-    <input type="number" id="jpyInput" placeholder="엔화 입력"> JPY
-    <button class="btn-convert" onclick="convertToKRW('jpy')">변환</button>
-  </div>
-  <div class="btn-row">
-    <button class="btn-plus" onclick="adjustAndConvert('jpy', 100)">+100</button>
-    <button class="btn-minus" onclick="adjustAndConvert('jpy', -100)">-100</button>
-    <button class="btn-plus" onclick="adjustAndConvert('jpy', 1000)">+1000</button>
-    <button class="btn-minus" onclick="adjustAndConvert('jpy', -1000)">-1000</button>
-    <button class="btn-plus" onclick="adjustAndConvert('jpy', 10000)">+10000</button>
-    <button class="btn-minus" onclick="adjustAndConvert('jpy', -10000)">-10000</button>
-  </div>
-  <div>결과: <span id="jpyResult" class="result">0 원</span></div>
-</div>
-
-<!-- 바트 → 원화 -->
-<div class="section">
-  <div class="section-header">
-    <h2>💰 바트 → 원화</h2>
-    <div class="rate-input">
-      기준 환율: <input type="number" id="thbRateInput" value="38.2" step="0.1"> 원/THB
-    </div>
-  </div>
-  <div class="input-row">
-    <input type="number" id="thbInput" placeholder="바트 입력"> THB
-    <button class="btn-convert" onclick="convertToKRW('thb')">변환</button>
-  </div>
-  <div class="btn-row">
-    <button class="btn-plus" onclick="adjustAndConvert('thb', 50)">+50</button>
-    <button class="btn-minus" onclick="adjustAndConvert('thb', -50)">-50</button>
-    <button class="btn-plus" onclick="adjustAndConvert('thb', 100)">+100</button>
-    <button class="btn-minus" onclick="adjustAndConvert('thb', -100)">-100</button>
-    <button class="btn-plus" onclick="adjustAndConvert('thb', 200)">+200</button>
-    <button class="btn-minus" onclick="adjustAndConvert('thb', -200)">-200</button>
-  </div>
-  <div>결과: <span id="thbResult" class="result">0 원</span></div>
-</div>
-
-<!-- 동 → 원화 -->
-<div class="section">
-  <div class="section-header">
-    <h2>🇻🇳 동 → 원화</h2>
-    <div class="rate-input">
-      기준 환율: <input type="number" id="vndRateInput" value="0.056" step="0.001"> 원/VND
-    </div>
-  </div>
-  <div class="input-row">
-    <input type="number" id="vndInput" placeholder="동 입력"> VND
-    <button class="btn-convert" onclick="convertToKRW('vnd')">변환</button>
-  </div>
-  <div class="btn-row">
-    <button class="btn-plus" onclick="adjustAndConvert('vnd', 20000)">+20,000</button>
-    <button class="btn-minus" onclick="adjustAndConvert('vnd', -20000)">-20,000</button>
-    <button class="btn-plus" onclick="adjustAndConvert('vnd', 50000)">+50,000</button>
-    <button class="btn-minus" onclick="adjustAndConvert('vnd', -50000)">-50,000</button>
-    <button class="btn-plus" onclick="adjustAndConvert('vnd', 100000)">+100,000</button>
-    <button class="btn-minus" onclick="adjustAndConvert('vnd', -100000)">-100,000</button>
-  </div>
-  <div>결과: <span id="vndResult" class="result">0 원</span></div>
-</div>
+<!-- 공통 섹션 템플릿 -->
+<div id="converter-container"></div>
 
 <script>
+  // 통화 정보
+  const currencies = [
+    { code: 'usd', name: '달러', symbol: '💵', rate: 1429, step: 1, plusMinus: [1,10,100] },
+    { code: 'jpy', name: '엔화', symbol: '💴', rate: 9.42, step: 0.01, plusMinus: [100,1000,10000] },
+    { code: 'thb', name: '바트', symbol: '💰', rate: 38.2, step: 0.1, plusMinus: [50,100,200] },
+    { code: 'vnd', name: '동', symbol: '🇻🇳', rate: 0.056, step: 0.001, plusMinus: [20000,50000,100000] }
+  ];
+
+  // 한글 숫자 읽기 함수
+  function numberToKorean(num) {
+    if (!num || isNaN(num)) return '';
+    const units = ['', '만', '억', '조'];
+    const nums = ['', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
+    const smallUnits = ['', '십', '백', '천'];
+    let result = '';
+    const numStr = String(Math.floor(num));
+    const len = numStr.length;
+
+    let unitPos = 0;
+    for (let i = 0; i < len; i += 4) {
+      const chunk = numStr.slice(Math.max(0, len - (i + 4)), len - i);
+      let chunkResult = '';
+      for (let j = 0; j < chunk.length; j++) {
+        const n = +chunk[j];
+        if (n) chunkResult += nums[n] + smallUnits[chunk.length - j - 1];
+      }
+      if (chunkResult) result = chunkResult + units[unitPos] + result;
+      unitPos++;
+    }
+    return result || '영';
+  }
+
+  // HTML 생성
+  const container = document.getElementById('converter-container');
+
+  currencies.forEach(c => {
+    const section = document.createElement('div');
+    section.className = 'section';
+    section.id = `${c.code}-section`;
+    section.innerHTML = `
+      <div class="section-header">
+        <h2>${c.symbol} ${c.name} → 원화</h2>
+        <div class="rate-input">기준 환율:
+          <input type="number" id="${c.code}RateInput" value="${c.rate}" step="${c.step}"> 원/${c.code.toUpperCase()}
+        </div>
+      </div>
+      <div class="input-row">
+        <input type="number" id="${c.code}Input" placeholder="${c.name} 입력"> ${c.code.toUpperCase()}
+        <button class="btn-convert" onclick="convertToKRW('${c.code}')">변환</button>
+      </div>
+      <div class="btn-row">
+        ${c.plusMinus.map(v => `
+          <button class="btn-plus" onclick="adjustAndConvert('${c.code}', ${v})">+${v.toLocaleString()}</button>
+          <button class="btn-minus" onclick="adjustAndConvert('${c.code}', -${v})">-${v.toLocaleString()}</button>
+        `).join('')}
+      </div>
+      <div>결과:
+        <span id="${c.code}Result" class="result">0 원</span>
+        <span id="${c.code}Readable" class="readable"></span>
+      </div>
+      <div class="btn-row">
+        <button class="btn-copy" onclick="copyResult('${c.code}')">복사</button>
+        <button class="btn-image" onclick="saveAsImage('${c.code}')">이미지 저장</button>
+      </div>
+    `;
+    container.appendChild(section);
+  });
+
   // 변환 함수
   function convertToKRW(currency) {
-    let inputEl = document.getElementById(`${currency}Input`);
-    let rateEl = document.getElementById(`${currency}RateInput`);
-    let resultEl = document.getElementById(`${currency}Result`);
-
-    let input = parseFloat(inputEl.value);
-    let rate = parseFloat(rateEl.value);
+    const input = parseFloat(document.getElementById(`${currency}Input`).value);
+    const rate = parseFloat(document.getElementById(`${currency}RateInput`).value);
+    const resultEl = document.getElementById(`${currency}Result`);
+    const readableEl = document.getElementById(`${currency}Readable`);
+    const currObj = currencies.find(c => c.code === currency);
     if (isNaN(input) || isNaN(rate)) {
       resultEl.textContent = '0 원';
+      readableEl.textContent = '';
       return;
     }
-
-    let converted = Math.round(input * rate).toLocaleString();
+    const converted = Math.round(input * rate);
     resultEl.classList.remove('highlight');
     void resultEl.offsetWidth;
-    resultEl.textContent = `${converted} 원`;
+    resultEl.textContent = `${converted.toLocaleString()} 원`;
+    readableEl.textContent = `(${numberToKorean(input)} ${currObj.name})`;
     resultEl.classList.add('highlight');
   }
 
-  // 값 조절 및 자동 변환
+  // 조절 및 자동 변환
   function adjustAndConvert(currency, amount) {
-    let inputEl = document.getElementById(`${currency}Input`);
+    const inputEl = document.getElementById(`${currency}Input`);
     let current = parseFloat(inputEl.value) || 0;
     current += amount;
     if (current < 0) current = 0;
@@ -224,11 +227,31 @@
     convertToKRW(currency);
   }
 
-  // 입력값이 바뀔 때 자동 변환
-  ['usd', 'jpy', 'thb', 'vnd'].forEach(c => {
-    document.getElementById(`${c}Input`).addEventListener('input', () => convertToKRW(c));
-    document.getElementById(`${c}RateInput`).addEventListener('input', () => convertToKRW(c));
+  // 입력 및 환율 자동 변환
+  currencies.forEach(c => {
+    document.getElementById(`${c.code}Input`).addEventListener('input', () => convertToKRW(c.code));
+    document.getElementById(`${c.code}RateInput`).addEventListener('input', () => convertToKRW(c.code));
   });
+
+  // 복사 기능
+  function copyResult(currency) {
+    const resultText = document.getElementById(`${currency}Result`).textContent;
+    const readable = document.getElementById(`${currency}Readable`).textContent;
+    navigator.clipboard.writeText(`${resultText} ${readable}`).then(() => {
+      alert('결과가 복사되었습니다!');
+    });
+  }
+
+  // 이미지 저장 기능
+  function saveAsImage(currency) {
+    const section = document.getElementById(`${currency}-section`);
+    html2canvas(section, { scale: 2 }).then(canvas => {
+      const link = document.createElement('a');
+      link.download = `${currency}_변환결과.png`;
+      link.href = canvas.toDataURL();
+      link.click();
+    });
+  }
 </script>
 
 </body>
