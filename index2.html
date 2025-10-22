@@ -10,7 +10,7 @@
     font-family: 'Pretendard', sans-serif;
     background: #f8f9fa;
     padding: 20px;
-    max-width: 500px;
+    max-width: 480px;
     margin: auto;
   }
 
@@ -36,18 +36,23 @@
   }
 
   .rate-input {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 2px;
   }
 
   .rate-input input {
-    width: 70px;
-    padding: 3px 5px;
-    border-radius: 6px;
+    width: 50%;
+    height: 18px;
+    padding: 2px 4px;
+    border-radius: 5px;
     border: 1px solid #ccc;
+    font-size: 0.7rem;
   }
 
   input[type="number"] {
-    padding: 8px 10px;
+    padding: 10px;
     border: 1px solid #ccc;
     border-radius: 6px;
     font-size: 1.1rem;
@@ -58,18 +63,29 @@
     margin-bottom: 10px;
   }
 
-  .btn-row {
-    margin-top: 6px;
+  .btn-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  .btn-grid-row {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 5px;
   }
 
   button {
-    padding: 6px 9px;
-    margin: 3px 2px;
+    width: 30%;
+    padding: 8px 0;
+    margin: 3px 0;
     border: none;
     border-radius: 6px;
     color: white;
     cursor: pointer;
     font-size: 0.9rem;
+    transition: background 0.15s ease;
   }
 
   /* 색상 지정 */
@@ -79,8 +95,9 @@
   .btn-copy { background: #6c757d; }    /* 회색 */
   .btn-image { background: #ffb100; color: #333; }
 
-  button:hover {
-    opacity: 0.85;
+  /* 클릭 시 반짝임 효과 */
+  button:active {
+    filter: brightness(1.4);
   }
 
   .result {
@@ -116,6 +133,7 @@
     body { padding: 10px; }
     h2 { font-size: 1rem; }
     .section { padding: 12px; }
+    button { font-size: 0.85rem; }
   }
 </style>
 </head>
@@ -139,7 +157,6 @@
     let result = '';
     const numStr = String(Math.floor(num));
     const len = numStr.length;
-
     let unitPos = 0;
     for (let i = 0; i < len; i += 4) {
       const chunk = numStr.slice(Math.max(0, len - (i + 4)), len - i);
@@ -164,24 +181,26 @@
       <div class="section-header">
         <h2>${c.symbol} ${c.name} → 원화</h2>
         <div class="rate-input">기준 환율:
-          <input type="number" id="${c.code}RateInput" value="${c.rate}" step="${c.step}"> 원/${c.code.toUpperCase()}
+          <input type="number" id="${c.code}RateInput" value="${c.rate}" step="${c.step}">
         </div>
       </div>
       <div class="input-row">
         <input type="number" id="${c.code}Input" placeholder="${c.name} 입력"> ${c.code.toUpperCase()}
         <button class="btn-convert" onclick="convertToKRW('${c.code}')">변환</button>
       </div>
-      <div class="btn-row">
-        ${c.plusMinus.map(v => `
-          <button class="btn-plus" onclick="adjustAndConvert('${c.code}', ${v})">+${v.toLocaleString()}</button>
-          <button class="btn-minus" onclick="adjustAndConvert('${c.code}', -${v})">-${v.toLocaleString()}</button>
-        `).join('')}
+      <div class="btn-grid">
+        <div class="btn-grid-row">
+          ${c.plusMinus.map(v => `<button class="btn-plus" onclick="adjustAndConvert('${c.code}', ${v})">+${v.toLocaleString()}</button>`).join('')}
+        </div>
+        <div class="btn-grid-row">
+          ${c.plusMinus.map(v => `<button class="btn-minus" onclick="adjustAndConvert('${c.code}', -${v})">-${v.toLocaleString()}</button>`).join('')}
+        </div>
       </div>
       <div>결과:
         <span id="${c.code}Result" class="result">0 원</span>
         <span id="${c.code}Readable" class="readable"></span>
       </div>
-      <div class="btn-row">
+      <div class="btn-grid-row">
         <button class="btn-copy" onclick="copyResult('${c.code}')">복사</button>
         <button class="btn-image" onclick="saveAsImage('${c.code}')">이미지 저장</button>
       </div>
@@ -215,6 +234,7 @@
     if (current < 0) current = 0;
     inputEl.value = current;
     convertToKRW(currency);
+    vibrateButton(); // 진동
   }
 
   currencies.forEach(c => {
@@ -230,6 +250,7 @@
     const textToCopy = `${inputVal.toLocaleString()}${currObj.name}는 원화로 ${resultText} 입니다.`;
     navigator.clipboard.writeText(textToCopy).then(() => {
       alert('복사되었습니다:\n' + textToCopy);
+      vibrateButton();
     });
   }
 
@@ -240,7 +261,12 @@
       link.download = `${currency}_변환결과.png`;
       link.href = canvas.toDataURL();
       link.click();
+      vibrateButton();
     });
+  }
+
+  function vibrateButton() {
+    if (navigator.vibrate) navigator.vibrate(30); // 아주 짧은 진동
   }
 </script>
 </body>
