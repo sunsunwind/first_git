@@ -1,148 +1,72 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <title>나만의 영어 단어 학습기</title>
+    <title>무작위 단어 추출기</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f4f4f9; }
-        h1 { color: #333; text-align: center; }
-        .section { background-color: #fff; padding: 20px; margin-bottom: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        input[type="text"], button { padding: 10px; margin: 5px 0; border: 1px solid #ccc; border-radius: 4px; width: calc(50% - 12px); box-sizing: border-box; }
-        button { cursor: pointer; background-color: #5c67f2; color: white; border: none; transition: background-color 0.3s; width: 100%; margin-top: 10px; }
-        button:hover { background-color: #4a54e1; }
-        .word-list { max-height: 150px; overflow-y: auto; border: 1px solid #eee; padding: 10px; border-radius: 4px; background-color: #fafafa; }
-        #random-word-display { font-size: 1.8em; font-weight: bold; margin: 15px 0; padding: 15px; border: 2px solid #5c67f2; border-radius: 6px; min-height: 50px; text-align: center; background-color: #e6e8ff; }
-        #quiz-result { font-weight: bold; margin-top: 10px; }
-        .flex-row { display: flex; gap: 10px; }
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding-top: 50px;
+        }
+        #word-output {
+            font-size: 2em;
+            margin: 20px;
+            min-height: 1.2em; /* 단어가 로드될 때 레이아웃이 흔들리는 것을 방지 */
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
 
-    <h1>나만의 영어 단어 학습기 📚</h1>
-
-    <div class="section">
-        <h2>1. 단어 추가하기</h2>
-        <div class="flex-row">
-            <input type="text" id="english-input" placeholder="영어 단어 (e.g. apple)">
-            <input type="text" id="korean-input" placeholder="한국어 뜻 (e.g. 사과)">
-        </div>
-        <button onclick="addWord()">단어 리스트에 추가</button>
-        <p>현재 등록된 단어 수: <span id="word-count">0</span>개</p>
-        <div class="word-list" id="word-list-display"></div>
-    </div>
-
-    <hr>
-
-    <div class="section">
-        <h2>2. 무작위 단어 연습하기</h2>
-        <button onclick="startQuiz()">새 단어 (영어) 추출</button>
-        
-        <div id="random-word-display">단어를 추출해 보세요!</div>
-        
-        <input type="text" id="quiz-answer" placeholder="단어의 한국어 뜻 입력" style="width: 100%;">
-        <button onclick="checkAnswer()">정답 확인</button>
-        
-        <div id="quiz-result"></div>
-        
-        <button onclick="showAnswer()" style="background-color: #ff9800; margin-top: 5px;">정답 보기</button>
-    </div>
+    <h1>무작위 영어 단어 추출</h1>
+    <div id="word-output">단어를 보려면 버튼을 누르세요.</div>
+    <button onclick="displayRandomWord()">새 단어 추출</button>
 
     <script>
-        let words = [];
-        let currentWord = null;
+        // 무작위로 추출할 단어 목록
+        const englishWords = [
+            "apple",
+            "banana",
+            "cat",
+            "dog",
+            "elephant",
+            "flower",
+            "guitar",
+            "house",
+            "iceberg",
+            "jacket",
+            "kite",
+            "lemon",
+            "mountain",
+            "notebook",
+            "ocean",
+            "penguin",
+            "queen",
+            "river",
+            "sunshine",
+            "tree",
+            "umbrella",
+            "volcano",
+            "window",
+            "xylophone",
+            "yacht",
+            "zebra"
+        ];
 
-        // 1. 단어 추가 기능
-        function addWord() {
-            const engInput = document.getElementById('english-input');
-            const korInput = document.getElementById('korean-input');
-            const english = engInput.value.trim().toLowerCase();
-            const korean = korInput.value.trim();
+        function displayRandomWord() {
+            // 1. 단어 배열의 길이를 기반으로 무작위 인덱스 생성
+            const randomIndex = Math.floor(Math.random() * englishWords.length);
 
-            if (english === "" || korean === "") {
-                alert("영어 단어와 한국어 뜻을 모두 입력해 주세요.");
-                return;
-            }
+            // 2. 무작위 단어 선택
+            const randomWord = englishWords[randomIndex];
 
-            words.push({ english, korean });
-            engInput.value = ''; // 입력창 비우기
-            korInput.value = '';
-            engInput.focus(); // 영어 입력창에 포커스
-
-            updateWordListDisplay();
+            // 3. HTML 요소에 단어 표시
+            document.getElementById('word-output').textContent = randomWord;
         }
-
-        // 단어 리스트 및 개수 업데이트
-        function updateWordListDisplay() {
-            const countDisplay = document.getElementById('word-count');
-            const listDisplay = document.getElementById('word-list-display');
-
-            countDisplay.textContent = words.length;
-
-            if (words.length > 0) {
-                listDisplay.innerHTML = words.map(word => 
-                    `<div>**${word.english}** : ${word.korean}</div>`
-                ).join('');
-            } else {
-                listDisplay.innerHTML = '등록된 단어가 없습니다.';
-            }
-        }
-
-        // 2. 퀴즈 시작 (무작위 단어 추출) 기능
-        function startQuiz() {
-            if (words.length === 0) {
-                document.getElementById('random-word-display').textContent = "등록된 단어가 없습니다. 단어를 먼저 추가해 주세요.";
-                currentWord = null;
-                return;
-            }
-
-            // 무작위 인덱스 생성
-            const randomIndex = Math.floor(Math.random() * words.length);
-            currentWord = words[randomIndex];
-
-            // 영어 단어만 화면에 표시
-            document.getElementById('random-word-display').textContent = currentWord.english;
-            document.getElementById('quiz-answer').value = ''; // 답 입력창 비우기
-            document.getElementById('quiz-result').textContent = ''; // 결과 메시지 지우기
-            document.getElementById('quiz-answer').focus(); // 답 입력창에 포커스
-        }
-
-        // 3. 정답 확인 기능
-        function checkAnswer() {
-            if (!currentWord) {
-                document.getElementById('quiz-result').textContent = "먼저 단어 추출 버튼을 눌러주세요.";
-                return;
-            }
-
-            const userAnswer = document.getElementById('quiz-answer').value.trim();
-            const resultDisplay = document.getElementById('quiz-result');
-
-            // 정답은 입력된 한국어 뜻과 정확히 일치해야 함 (대소문자 구분 없음)
-            if (userAnswer === currentWord.korean) {
-                resultDisplay.textContent = "✅ 정답입니다! 축하해요.";
-                resultDisplay.style.color = "green";
-            } else {
-                resultDisplay.textContent = `❌ 오답입니다. 다시 시도해 보세요.`;
-                resultDisplay.style.color = "red";
-            }
-        }
-        
-        // 4. 정답 보기 기능
-        function showAnswer() {
-             if (!currentWord) {
-                document.getElementById('quiz-result').textContent = "먼저 단어 추출 버튼을 눌러주세요.";
-                return;
-            }
-            
-            const resultDisplay = document.getElementById('quiz-result');
-            resultDisplay.textContent = `정답은 "${currentWord.korean}" 입니다.`;
-            resultDisplay.style.color = "#0000ff"; // 파란색으로 표시
-            
-            // 정답을 보고 나면 다음 단어 추출을 유도
-            document.getElementById('quiz-answer').value = currentWord.korean;
-        }
-
-        // 페이지 로드 시 초기 목록 표시
-        window.onload = updateWordListDisplay;
     </script>
 
 </body>
