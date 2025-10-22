@@ -23,26 +23,29 @@
     margin-bottom: 15px;
   }
 
+  /* 결과 표시 스타일 (강조 + 형광펜 효과) */
   .result {
-    font-size: 2rem;
-    font-weight: 700;
+    font-size: 3rem;
+    font-weight: 800;
     display: inline-block;
-    background: linear-gradient(90deg, #fff79a 0%, #fff79a 100%);
-    border-radius: 5px;
-    padding: 5px 10px;
-    transition: background 0.3s ease, transform 0.2s ease;
+    background: linear-gradient(90deg, #fff89a 0%, #fff79a 100%);
+    border-radius: 8px;
+    padding: 8px 14px;
+    transition: all 0.4s ease;
   }
 
+  /* 값이 바뀔 때 애니메이션 효과 */
   .highlight {
-    animation: blink 0.6s ease;
-    background: linear-gradient(90deg, #ffe66b 0%, #fff79a 100%);
+    animation: pop 0.6s ease;
+    background: linear-gradient(90deg, #ffe55c 0%, #fff89a 100%);
     transform: scale(1.1);
+    box-shadow: 0 0 10px rgba(255, 230, 90, 0.7);
   }
 
-  @keyframes blink {
-    0% { background: #fff79a; transform: scale(1.05); }
-    50% { background: #ffe66b; transform: scale(1.15); }
-    100% { background: #fff79a; transform: scale(1.05); }
+  @keyframes pop {
+    0% { transform: scale(1); background: #fff89a; }
+    50% { transform: scale(1.2); background: #ffe55c; }
+    100% { transform: scale(1); background: #fff89a; }
   }
 
   .input-row {
@@ -73,7 +76,7 @@
 </head>
 <body>
 
-<!-- 달러 → 원화 -->
+<!-- 💵 달러 → 원화 -->
 <div class="section">
   <h2>💵 달러 → 원화</h2>
   <div class="input-row">
@@ -83,7 +86,7 @@
   <div>결과: <span id="usdResult" class="result">0 원</span></div>
 </div>
 
-<!-- 엔화 → 원화 -->
+<!-- 💴 엔화 → 원화 -->
 <div class="section">
   <h2>💴 엔화 → 원화</h2>
   <div class="input-row">
@@ -93,7 +96,7 @@
   <div>결과: <span id="jpyResult" class="result">0 원</span></div>
 </div>
 
-<!-- 바트 → 원화 -->
+<!-- 💰 바트 → 원화 -->
 <div class="section">
   <h2>💰 바트 → 원화</h2>
   <div class="input-row">
@@ -103,7 +106,7 @@
   <div>결과: <span id="thbResult" class="result">0 원</span></div>
 </div>
 
-<!-- 동 → 원화 -->
+<!-- 🇻🇳 동 → 원화 -->
 <div class="section">
   <h2>🇻🇳 동 → 원화</h2>
   <div class="input-row">
@@ -113,8 +116,48 @@
   <div>결과: <span id="vndResult" class="result">0 원</span></div>
 </div>
 
+<!-- 🇰🇷 원화 → 달러 -->
+<div class="section">
+  <h2>🇰🇷 원화 → 달러</h2>
+  <div class="input-row">
+    <input type="number" id="krwToUsdInput" placeholder="원화 입력"> 원
+    <button onclick="convertFromKRW('usd')">변환</button>
+  </div>
+  <div>결과: <span id="krwToUsdResult" class="result">0 USD</span></div>
+</div>
+
+<!-- 🇰🇷 원화 → 엔화 -->
+<div class="section">
+  <h2>🇰🇷 원화 → 엔화</h2>
+  <div class="input-row">
+    <input type="number" id="krwToJpyInput" placeholder="원화 입력"> 원
+    <button onclick="convertFromKRW('jpy')">변환</button>
+  </div>
+  <div>결과: <span id="krwToJpyResult" class="result">0 JPY</span></div>
+</div>
+
+<!-- 🇰🇷 원화 → 바트 -->
+<div class="section">
+  <h2>🇰🇷 원화 → 바트</h2>
+  <div class="input-row">
+    <input type="number" id="krwToThbInput" placeholder="원화 입력"> 원
+    <button onclick="convertFromKRW('thb')">변환</button>
+  </div>
+  <div>결과: <span id="krwToThbResult" class="result">0 THB</span></div>
+</div>
+
+<!-- 🇰🇷 원화 → 동 -->
+<div class="section">
+  <h2>🇰🇷 원화 → 동</h2>
+  <div class="input-row">
+    <input type="number" id="krwToVndInput" placeholder="원화 입력"> 원
+    <button onclick="convertFromKRW('vnd')">변환</button>
+  </div>
+  <div>결과: <span id="krwToVndResult" class="result">0 VND</span></div>
+</div>
+
 <script>
-  // 환율 예시 (실제는 API 연동 가능)
+  // 환율 예시 (실제 API 연동 가능)
   const rates = {
     usd: 1390,
     jpy: 9.3,
@@ -122,6 +165,7 @@
     vnd: 0.056
   };
 
+  // 외화 → 원화
   function convertToKRW(currency) {
     const input = document.getElementById(`${currency}Input`).value;
     const resultElement = document.getElementById(`${currency}Result`);
@@ -129,12 +173,28 @@
 
     const rate = rates[currency];
     const converted = Math.round(input * rate).toLocaleString();
-    
-    // 기존 애니메이션 제거 후 재적용 (변화감 강조)
-    resultElement.classList.remove('highlight');
-    void resultElement.offsetWidth; // reflow 강제
-    resultElement.textContent = `${converted} 원`;
-    resultElement.classList.add('highlight');
+
+    animateResult(resultElement, `${converted} 원`);
+  }
+
+  // 원화 → 외화
+  function convertFromKRW(currency) {
+    const input = document.getElementById(`krwTo${currency.toUpperCase()}Input`).value;
+    const resultElement = document.getElementById(`krwTo${currency.toUpperCase()}Result`);
+    if (!input) return;
+
+    const rate = rates[currency];
+    const converted = (input / rate).toFixed(2).toLocaleString();
+
+    animateResult(resultElement, `${converted} ${currency.toUpperCase()}`);
+  }
+
+  // 결과 강조 애니메이션
+  function animateResult(element, text) {
+    element.classList.remove('highlight');
+    void element.offsetWidth; // reflow 강제
+    element.textContent = text;
+    element.classList.add('highlight');
   }
 </script>
 </body>
