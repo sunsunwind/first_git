@@ -47,15 +47,15 @@
   }
 
   input[type="number"] {
-    padding: 5px 8px;
+    padding: 8px 10px;
     border: 1px solid #ccc;
     border-radius: 6px;
-    font-size: 0.95rem;
-    width: 120px;
+    font-size: 1.1rem;
+    width: 130px;
   }
 
   .input-row {
-    margin-bottom: 8px;
+    margin-bottom: 10px;
   }
 
   .btn-row {
@@ -63,29 +63,25 @@
   }
 
   button {
-    padding: 5px 8px;
+    padding: 6px 9px;
     margin: 3px 2px;
     border: none;
     border-radius: 6px;
     color: white;
     cursor: pointer;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
   }
 
-  .btn-plus { background: #28a745; }
-  .btn-plus:hover { background: #218838; }
-
-  .btn-minus { background: #dc3545; }
-  .btn-minus:hover { background: #c82333; }
-
-  .btn-convert { background: #6c757d; }
-  .btn-convert:hover { background: #5a6268; }
-
-  .btn-copy { background: #17a2b8; }
-  .btn-copy:hover { background: #138496; }
-
+  /* 색상 지정 */
+  .btn-plus { background: #555; }       /* 진회색 */
+  .btn-minus { background: #ccc; color: #333; } /* 연회색 */
+  .btn-convert { background: #7bd56d; color: #222; } /* 연두색 */
+  .btn-copy { background: #6c757d; }    /* 회색 */
   .btn-image { background: #ffb100; color: #333; }
-  .btn-image:hover { background: #e0a800; }
+
+  button:hover {
+    opacity: 0.85;
+  }
 
   .result {
     font-size: 1.4rem;
@@ -125,11 +121,9 @@
 </head>
 <body>
 
-<!-- 공통 섹션 템플릿 -->
 <div id="converter-container"></div>
 
 <script>
-  // 통화 정보
   const currencies = [
     { code: 'usd', name: '달러', symbol: '💵', rate: 1429, step: 1, plusMinus: [1,10,100] },
     { code: 'jpy', name: '엔화', symbol: '💴', rate: 9.42, step: 0.01, plusMinus: [100,1000,10000] },
@@ -137,7 +131,6 @@
     { code: 'vnd', name: '동', symbol: '🇻🇳', rate: 0.056, step: 0.001, plusMinus: [20000,50000,100000] }
   ];
 
-  // 한글 숫자 읽기 함수
   function numberToKorean(num) {
     if (!num || isNaN(num)) return '';
     const units = ['', '만', '억', '조'];
@@ -161,7 +154,6 @@
     return result || '영';
   }
 
-  // HTML 생성
   const container = document.getElementById('converter-container');
 
   currencies.forEach(c => {
@@ -197,7 +189,6 @@
     container.appendChild(section);
   });
 
-  // 변환 함수
   function convertToKRW(currency) {
     const input = parseFloat(document.getElementById(`${currency}Input`).value);
     const rate = parseFloat(document.getElementById(`${currency}RateInput`).value);
@@ -217,7 +208,6 @@
     resultEl.classList.add('highlight');
   }
 
-  // 조절 및 자동 변환
   function adjustAndConvert(currency, amount) {
     const inputEl = document.getElementById(`${currency}Input`);
     let current = parseFloat(inputEl.value) || 0;
@@ -227,22 +217,22 @@
     convertToKRW(currency);
   }
 
-  // 입력 및 환율 자동 변환
   currencies.forEach(c => {
     document.getElementById(`${c.code}Input`).addEventListener('input', () => convertToKRW(c.code));
     document.getElementById(`${c.code}RateInput`).addEventListener('input', () => convertToKRW(c.code));
   });
 
-  // 복사 기능
   function copyResult(currency) {
+    const inputVal = parseFloat(document.getElementById(`${currency}Input`).value);
     const resultText = document.getElementById(`${currency}Result`).textContent;
-    const readable = document.getElementById(`${currency}Readable`).textContent;
-    navigator.clipboard.writeText(`${resultText} ${readable}`).then(() => {
-      alert('결과가 복사되었습니다!');
+    const currObj = currencies.find(c => c.code === currency);
+    if (!inputVal) return alert("금액을 입력해주세요!");
+    const textToCopy = `${inputVal.toLocaleString()}${currObj.name}는 원화로 ${resultText} 입니다.`;
+    navigator.clipboard.writeText(textToCopy).then(() => {
+      alert('복사되었습니다:\n' + textToCopy);
     });
   }
 
-  // 이미지 저장 기능
   function saveAsImage(currency) {
     const section = document.getElementById(`${currency}-section`);
     html2canvas(section, { scale: 2 }).then(canvas => {
@@ -253,6 +243,5 @@
     });
   }
 </script>
-
 </body>
 </html>
