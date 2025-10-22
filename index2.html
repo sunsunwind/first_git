@@ -1,39 +1,295 @@
-function adjustAndConvert(currency, amount) {
-  const inputEl = document.getElementById(`${currency}Input`);
-  let current = parseFloat(inputEl.value) || 0;
-  current += amount;
-  if (current < 0) current = 0;
-  inputEl.value = current;
-  convertToKRW(currency);
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>통화 변환</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+  body {
+    font-family: 'Pretendard', sans-serif;
+    background: #f8f9fa;
+    padding: 20px;
+    max-width: 480px;
+    margin: auto;
+  }
 
-  // 버튼 클릭 시 즉시 진동 (사용자 제스처 안에 포함)
-  if (navigator.vibrate) navigator.vibrate(30);
-}
+  .section {
+    background: #fff;
+    border-radius: 12px;
+    padding: 15px 20px;
+    margin-bottom: 25px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+  }
 
-function copyResult(currency) {
-  const inputVal = parseFloat(document.getElementById(`${currency}Input`).value);
-  const resultText = document.getElementById(`${currency}Result`).textContent;
-  const currObj = currencies.find(c => c.code === currency);
-  if (!inputVal) return alert("금액을 입력해주세요!");
-  const textToCopy = `${inputVal.toLocaleString()}${currObj.name}는 원화로 ${resultText} 입니다.`;
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
 
-  navigator.clipboard.writeText(textToCopy).then(() => {
-    alert('복사되었습니다:\n' + textToCopy);
+  h2 {
+    color: #333;
+    font-size: 1.1rem;
+    margin: 0 0 8px 0;
+  }
 
-    // 복사 버튼 진동
-    if (navigator.vibrate) navigator.vibrate(50);
+  .rate-input {
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .rate-input input {
+    width: 50%;
+    height: 18px;
+    padding: 2px 4px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    font-size: 0.7rem;
+  }
+
+  input[type="number"] {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    width: 130px;
+  }
+
+  .input-row {
+    margin-bottom: 10px;
+  }
+
+  .btn-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  .btn-grid-row {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    margin-top: 5px;
+  }
+
+  button {
+    width: 30%;
+    padding: 8px 0;
+    margin: 3px 0;
+    border: none;
+    border-radius: 6px;
+    color: white;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.1s ease;
+    position: relative;
+  }
+
+  /* 버튼 색상 */
+  .btn-plus { background: #555; }      
+  .btn-minus { background: #ccc; color: #333; } 
+  .btn-convert { background: #7bd56d; color: #222; } 
+  .btn-copy { background: #6c757d; }    
+  .btn-image { background: #ffb100; color: #333; }
+
+  /* 클릭 시 밝기 반짝임 */
+  button:active {
+    filter: brightness(1.4);
+  }
+
+  /* 흔들림 애니메이션 */
+  @keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-2px); }
+    50% { transform: translateX(2px); }
+    75% { transform: translateX(-2px); }
+    100% { transform: translateX(0); }
+  }
+
+  .shake {
+    animation: shake 0.15s ease;
+  }
+
+  .result {
+    font-size: 1.4rem;
+    font-weight: 700;
+    display: inline-block;
+    background: linear-gradient(90deg, #fff79a 0%, #fff79a 100%);
+    border-radius: 5px;
+    padding: 5px 8px;
+    transition: background 0.3s ease, transform 0.2s ease;
+    word-break: keep-all;
+  }
+
+  .readable {
+    font-size: 0.9rem;
+    color: #666;
+    margin-left: 5px;
+  }
+
+  .highlight {
+    animation: blink 0.6s ease;
+    background: linear-gradient(90deg, #ffe66b 0%, #fff79a 100%);
+    transform: scale(1.05);
+  }
+
+  @keyframes blink {
+    0% { background: #fff79a; transform: scale(1.0); }
+    50% { background: #ffe66b; transform: scale(1.1); }
+    100% { background: #fff79a; transform: scale(1.0); }
+  }
+
+  @media (max-width: 480px) {
+    body { padding: 10px; }
+    h2 { font-size: 1rem; }
+    .section { padding: 12px; }
+    button { font-size: 0.85rem; }
+  }
+</style>
+</head>
+<body>
+
+<div id="converter-container"></div>
+
+<script>
+  const currencies = [
+    { code: 'usd', name: '달러', symbol: '💵', rate: 1429, step: 1, plusMinus: [1,10,100] },
+    { code: 'jpy', name: '엔화', symbol: '💴', rate: 9.42, step: 0.01, plusMinus: [100,1000,10000] },
+    { code: 'thb', name: '바트', symbol: '💰', rate: 38.2, step: 0.1, plusMinus: [50,100,200] },
+    { code: 'vnd', name: '동', symbol: '🇻🇳', rate: 0.056, step: 0.001, plusMinus: [20000,50000,100000] }
+  ];
+
+  function numberToKorean(num) {
+    if (!num || isNaN(num)) return '';
+    const units = ['', '만', '억', '조'];
+    const nums = ['', '일', '이', '삼', '사', '오', '육', '칠', '팔', '구'];
+    const smallUnits = ['', '십', '백', '천'];
+    let result = '';
+    const numStr = String(Math.floor(num));
+    const len = numStr.length;
+    let unitPos = 0;
+    for (let i = 0; i < len; i += 4) {
+      const chunk = numStr.slice(Math.max(0, len - (i + 4)), len - i);
+      let chunkResult = '';
+      for (let j = 0; j < chunk.length; j++) {
+        const n = +chunk[j];
+        if (n) chunkResult += nums[n] + smallUnits[chunk.length - j - 1];
+      }
+      if (chunkResult) result = chunkResult + units[unitPos] + result;
+      unitPos++;
+    }
+    return result || '영';
+  }
+
+  const container = document.getElementById('converter-container');
+
+  currencies.forEach(c => {
+    const section = document.createElement('div');
+    section.className = 'section';
+    section.id = `${c.code}-section`;
+    section.innerHTML = `
+      <div class="section-header">
+        <h2>${c.symbol} ${c.name} → 원화</h2>
+        <div class="rate-input">기준 환율:
+          <input type="number" id="${c.code}RateInput" value="${c.rate}" step="${c.step}">
+        </div>
+      </div>
+      <div class="input-row">
+        <input type="number" id="${c.code}Input" placeholder="${c.name} 입력"> ${c.code.toUpperCase()}
+        <button class="btn-convert" onclick="convertToKRW('${c.code}', this)">변환</button>
+      </div>
+      <div class="btn-grid">
+        <div class="btn-grid-row">
+          ${c.plusMinus.map(v => `<button class="btn-plus" onclick="adjustAndConvert('${c.code}', ${v}, this)">+${v.toLocaleString()}</button>`).join('')}
+        </div>
+        <div class="btn-grid-row">
+          ${c.plusMinus.map(v => `<button class="btn-minus" onclick="adjustAndConvert('${c.code}', -${v}, this)">-${v.toLocaleString()}</button>`).join('')}
+        </div>
+      </div>
+      <div>결과:
+        <span id="${c.code}Result" class="result">0 원</span>
+        <span id="${c.code}Readable" class="readable"></span>
+      </div>
+      <div class="btn-grid-row">
+        <button class="btn-copy" onclick="copyResult('${c.code}', this)">복사</button>
+        <button class="btn-image" onclick="saveAsImage('${c.code}', this)">이미지 저장</button>
+      </div>
+    `;
+    container.appendChild(section);
   });
-}
 
-function saveAsImage(currency) {
-  const section = document.getElementById(`${currency}-section`);
-  html2canvas(section, { scale: 2 }).then(canvas => {
-    const link = document.createElement('a');
-    link.download = `${currency}_변환결과.png`;
-    link.href = canvas.toDataURL();
-    link.click();
+  function convertToKRW(currency, btn) {
+    const input = parseFloat(document.getElementById(`${currency}Input`).value);
+    const rate = parseFloat(document.getElementById(`${currency}RateInput`).value);
+    const resultEl = document.getElementById(`${currency}Result`);
+    const readableEl = document.getElementById(`${currency}Readable`);
+    const currObj = currencies.find(c => c.code === currency);
+    if (isNaN(input) || isNaN(rate)) {
+      resultEl.textContent = '0 원';
+      readableEl.textContent = '';
+      return;
+    }
+    const converted = Math.round(input * rate);
+    resultEl.classList.remove('highlight');
+    void resultEl.offsetWidth;
+    resultEl.textContent = `${converted.toLocaleString()} 원`;
+    readableEl.textContent = `(${numberToKorean(input)} ${currObj.name})`;
+    resultEl.classList.add('highlight');
 
-    // 이미지 저장 버튼 진동
-    if (navigator.vibrate) navigator.vibrate(50);
+    triggerHaptic(btn);
+  }
+
+  function adjustAndConvert(currency, amount, btn) {
+    const inputEl = document.getElementById(`${currency}Input`);
+    let current = parseFloat(inputEl.value) || 0;
+    current += amount;
+    if (current < 0) current = 0;
+    inputEl.value = current;
+    convertToKRW(currency, btn);
+  }
+
+  function copyResult(currency, btn) {
+    const inputVal = parseFloat(document.getElementById(`${currency}Input`).value);
+    const resultText = document.getElementById(`${currency}Result`).textContent;
+    const currObj = currencies.find(c => c.code === currency);
+    if (!inputVal) return alert("금액을 입력해주세요!");
+    const textToCopy = `${inputVal.toLocaleString()}${currObj.name}는 원화로 ${resultText} 입니다.`;
+    navigator.clipboard.writeText(textToCopy).then(() => {
+      alert('복사되었습니다:\n' + textToCopy);
+      triggerHaptic(btn);
+    });
+  }
+
+  function saveAsImage(currency, btn) {
+    const section = document.getElementById(`${currency}-section`);
+    html2canvas(section, { scale: 2 }).then(canvas => {
+      const link = document.createElement('a');
+      link.download = `${currency}_변환결과.png`;
+      link.href = canvas.toDataURL();
+      link.click();
+      triggerHaptic(btn);
+    });
+  }
+
+  // 햅틱 또는 시각 흔들림
+  function triggerHaptic(btn) {
+    if (navigator.vibrate) {
+      navigator.vibrate(30);
+    } else {
+      // 지원 안하면 흔들림
+      btn.classList.add('shake');
+      setTimeout(() => btn.classList.remove('shake'), 150);
+    }
+  }
+
+  currencies.forEach(c => {
+    document.getElementById(`${c.code}Input`).addEventListener('input', () => convertToKRW(c.code));
+    document.getElementById(`${c.code}RateInput`).addEventListener('input', () => convertToKRW(c.code));
   });
-}
+</script>
+</body>
+</html>
