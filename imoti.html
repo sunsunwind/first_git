@@ -5,429 +5,196 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>이모지 복사 페이지</title>
 <style>
-  :root{
-    --bg:#0f1724;
-    --card:#0b1220;
-    --accent:#06b6d4;
-    --muted:#9aa4b2;
-    --glass: rgba(255,255,255,0.03);
-  }
   body{
     margin:0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-    background: linear-gradient(180deg,#071124 0%, #071a2a 100%);
-    color: #e6eef6;
-    -webkit-font-smoothing:antialiased;
-    -moz-osx-font-smoothing:grayscale;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans KR","Apple SD Gothic Neo",sans-serif;
+    background:#0f1724;
+    color:#e6eef6;
     padding:16px;
   }
-  header{
-    display:flex;
-    gap:12px;
-    align-items:center;
-    margin-bottom:12px;
+  h1{font-size:1.2rem;margin:0;}
+  .sub{color:#9aa4b2;font-size:0.9rem;margin:4px 0 16px 0;}
+  input,select,textarea,button{
+    font-family:inherit;
   }
-  h1{ font-size:1.1rem; margin:0; }
-  p.sub { margin:0; color:var(--muted); font-size:0.9rem; }
-
-  .controls{
-    display:flex;
-    gap:8px;
-    margin:12px 0 18px 0;
-    align-items:center;
-  }
-  .search{
-    flex:1;
-    display:flex;
-    gap:8px;
-  }
-  input[type="search"]{
+  input[type="search"],textarea{
     width:100%;
-    padding:10px 12px;
+    padding:10px;
     border-radius:10px;
-    border:1px solid rgba(255,255,255,0.06);
-    background:var(--glass);
+    border:1px solid rgba(255,255,255,0.1);
+    background:rgba(255,255,255,0.05);
     color:inherit;
     font-size:1rem;
     outline:none;
   }
-  select{
-    padding:10px;
-    border-radius:10px;
-    background:var(--glass);
-    border:1px solid rgba(255,255,255,0.06);
+  textarea{height:70px;resize:none;margin-top:8px;}
+  button{
+    border-radius:8px;
+    border:1px solid rgba(255,255,255,0.1);
+    background:rgba(255,255,255,0.05);
     color:inherit;
-    font-size:0.95rem;
+    cursor:pointer;
+    padding:8px 12px;
   }
   .grid{
     display:grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap:10px;
-  }
-  @media(min-width:640px){ .grid{ grid-template-columns: repeat(6, 1fr); } }
-  @media(min-width:900px){ .grid{ grid-template-columns: repeat(8, 1fr); } }
-
-  .card{
-    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-    border-radius:10px;
-    padding:10px;
-    display:flex;
+    grid-template-columns:repeat(4,1fr);
     gap:8px;
-    align-items:center;
-    justify-content:space-between;
-    border:1px solid rgba(255,255,255,0.03);
-    min-height:56px;
-    box-shadow: 0 1px 0 rgba(255,255,255,0.02) inset;
-  }
-  .emoji{
-    font-size:1.6rem;
-    line-height:1;
-    cursor:pointer;
-    user-select:none;
-  }
-  .label{
-    flex:1;
-    padding-left:8px;
-    font-size:0.95rem;
-    color:var(--muted);
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-  }
-  button.copy{
-    padding:8px 10px;
-    background:transparent;
-    border-radius:8px;
-    border:1px solid rgba(255,255,255,0.06);
-    color:inherit;
-    font-weight:600;
-    cursor:pointer;
-    font-size:0.9rem;
-    min-width:64px;
-  }
-  .toast{
-    position:fixed;
-    left:50%;
-    transform:translateX(-50%);
-    bottom:18px;
-    background:linear-gradient(180deg,#111827,#0b1220);
-    color:#e6eef6;
-    padding:10px 14px;
-    border-radius:999px;
-    box-shadow:0 6px 24px rgba(0,0,0,0.6);
-    display:none;
-    align-items:center;
-    gap:8px;
-    z-index:9999;
-  }
-  .top-note{
-    font-size:0.85rem;
-    color:var(--muted);
-  }
-  .footer{
     margin-top:16px;
-    color:var(--muted);
-    font-size:0.85rem;
-    text-align:center;
   }
-  .copy-all{
-    padding:10px 12px;
+  @media(min-width:600px){.grid{grid-template-columns:repeat(6,1fr)}}
+  .card{
+    background:rgba(255,255,255,0.03);
+    border:1px solid rgba(255,255,255,0.05);
     border-radius:10px;
-    background:transparent;
-    border:1px solid rgba(255,255,255,0.06);
-    color:inherit;
-    cursor:pointer;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:10px;
+  }
+  .emoji{font-size:1.6rem;cursor:pointer;}
+  .label{flex:1;padding-left:8px;color:#9aa4b2;font-size:0.9rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .toast{
+    position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+    background:#222;padding:10px 16px;border-radius:20px;
+    display:none;color:#fff;z-index:9999;
   }
 </style>
 </head>
 <body>
-<header>
-  <div>
-    <h1>이모지 복사 (모바일용)</h1>
-    <p class="sub">이모지를 탭하거나 옆의 <strong>[복사]</strong> 버튼을 눌러 클립보드에 복사하세요.</p>
-  </div>
-</header>
+<h1>이모지 복사 (한국어 검색 지원)</h1>
+<p class="sub">이모지를 탭하거나 [복사] 버튼을 눌러 복사하세요.</p>
 
-<div class="controls">
-  <div class="search">
-    <input id="q" type="search" placeholder="검색 (예: heart, smile, animal, 음식, 깃발 등)" autocomplete="off" />
-  </div>
-  <select id="category">
-    <option value="all">전체</option>
-    <option value="smile">표정/사람</option>
-    <option value="gesture">손/제스처</option>
-    <option value="heart">하트/감정</option>
-    <option value="nature">자연/동물</option>
-    <option value="food">음식/음료</option>
-    <option value="object">물건/기호</option>
-    <option value="flag">국기</option>
-  </select>
+<!-- 검색창 -->
+<input id="search" type="search" placeholder="검색 (예: 하트, 웃는, 음식, 강아지, love 등)" />
+
+<!-- 텍스트 입력 + 복사 -->
+<textarea id="textArea" placeholder="복사한 이모지나 직접 입력할 내용을 여기에 붙여넣으세요."></textarea>
+<div style="margin-top:8px;display:flex;justify-content:flex-end;">
+  <button id="copyText">텍스트 복사</button>
 </div>
 
-<div id="grid" class="grid" aria-live="polite"></div>
-
-<div style="margin-top:14px; display:flex; gap:8px; align-items:center;">
-  <button id="copyAllBtn" class="copy-all">현재 보이는 것 전체 복사</button>
-  <div style="flex:1;"></div>
-  <div class="top-note">탭하면 바로 복사됩니다 • 길게 눌러 표준 복사 메뉴 사용 가능</div>
-</div>
-
-<div class="footer">
-  필요하시면 이 목록에 이모지 추가해 드릴게요. (이 파일을 수정하면 직접 추가 가능)
-</div>
-
-<div id="toast" class="toast" role="status" aria-live="assertive"></div>
+<div id="grid" class="grid"></div>
+<div id="toast" class="toast"></div>
 
 <script>
-  // 이모지 데이터 (카테고리와 간단 라벨 포함). 필요하면 여기 추가/수정하세요.
-  const EMOJIS = [
-    // 표정/사람
-    {e:"😀", label:"grinning face", cat:"smile"},
-    {e:"😃", label:"smile big", cat:"smile"},
-    {e:"😄", label:"laugh", cat:"smile"},
-    {e:"😁", label:"grin", cat:"smile"},
-    {e:"😆", label:"laugh eyes", cat:"smile"},
-    {e:"😂", label:"tears of joy", cat:"smile"},
-    {e:"🤣", label:"rofl", cat:"smile"},
-    {e:"☺️", label:"blush", cat:"smile"},
-    {e:"😊", label:"smiling", cat:"smile"},
-    {e:"🙂", label:"slightly smile", cat:"smile"},
-    {e:"🙃", label:"upside down", cat:"smile"},
-    {e:"🥹", label:"holding back tears", cat:"smile"},
-    {e:"😍", label:"heart eyes", cat:"smile"},
-    {e:"🥰", label:"loving face", cat:"smile"},
-    {e:"😘", label:"kiss", cat:"smile"},
-    {e:"🤩", label:"starstruck", cat:"smile"},
-    {e:"😎", label:"sunglasses", cat:"smile"},
-    {e:"🤔", label:"thinking", cat:"smile"},
-    {e:"🤗", label:"hugging", cat:"smile"},
-    {e:"😴", label:"sleeping", cat:"smile"},
-    {e:"🤒", label:"sick face", cat:"smile"},
-    // 제스처/손
-    {e:"👍", label:"thumbs up", cat:"gesture"},
-    {e:"👎", label:"thumbs down", cat:"gesture"},
-    {e:"👌", label:"ok", cat:"gesture"},
-    {e:"✌️", label:"peace", cat:"gesture"},
-    {e:"🤞", label:"fingers crossed", cat:"gesture"},
-    {e:"👏", label:"clap", cat:"gesture"},
-    {e:"🙌", label:"raise hands", cat:"gesture"},
-    {e:"🙏", label:"pray/thanks", cat:"gesture"},
-    {e:"💪", label:"flex", cat:"gesture"},
-    {e:"🤝", label:"handshake", cat:"gesture"},
-    // 하트/감정
-    {e:"❤", label:"red heart", cat:"heart"},
-    {e:"🧡", label:"orange heart", cat:"heart"},
-    {e:"💛", label:"yellow heart", cat:"heart"},
-    {e:"💚", label:"green heart", cat:"heart"},
-    {e:"💙", label:"blue heart", cat:"heart"},
-    {e:"💜", label:"purple heart", cat:"heart"},
-    {e:"🖤", label:"black heart", cat:"heart"},
-    {e:"🤍", label:"white heart", cat:"heart"},
-    {e:"💓", label:"beating heart", cat:"heart"},
-    {e:"💖", label:"sparkling heart", cat:"heart"},
-    // 자연/동물
-    {e:"🐶", label:"dog", cat:"nature"},
-    {e:"🐱", label:"cat", cat:"nature"},
-    {e:"🐭", label:"mouse", cat:"nature"},
-    {e:"🐹", label:"hamster", cat:"nature"},
-    {e:"🐰", label:"rabbit", cat:"nature"},
-    {e:"🦊", label:"fox", cat:"nature"},
-    {e:"🐻", label:"bear", cat:"nature"},
-    {e:"🐼", label:"panda", cat:"nature"},
-    {e:"🦁", label:"lion", cat:"nature"},
-    {e:"🐮", label:"cow", cat:"nature"},
-    {e:"🐷", label:"pig", cat:"nature"},
-    {e:"🐸", label:"frog", cat:"nature"},
-    {e:"🐵", label:"monkey", cat:"nature"},
-    {e:"🐔", label:"chicken", cat:"nature"},
-    {e:"🦄", label:"unicorn", cat:"nature"},
-    {e:"🌸", label:"flower", cat:"nature"},
-    {e:"🌞", label:"sun with face", cat:"nature"},
-    {e:"🌙", label:"moon", cat:"nature"},
-    {e:"⭐", label:"star", cat:"nature"},
-    {e:"🔥", label:"fire", cat:"nature"},
-    // 음식/음료
-    {e:"🍏", label:"green apple", cat:"food"},
-    {e:"🍎", label:"red apple", cat:"food"},
-    {e:"🍌", label:"banana", cat:"food"},
-    {e:"🍓", label:"strawberry", cat:"food"},
-    {e:"🍑", label:"peach", cat:"food"},
-    {e:"🍕", label:"pizza", cat:"food"},
-    {e:"🍔", label:"burger", cat:"food"},
-    {e:"🍟", label:"fries", cat:"food"},
-    {e:"🍣", label:"sushi", cat:"food"},
-    {e:"🍜", label:"ramen", cat:"food"},
-    {e:"🍩", label:"donut", cat:"food"},
-    {e:"🍪", label:"cookie", cat:"food"},
-    {e:"☕", label:"coffee", cat:"food"},
-    {e:"🍷", label:"wine", cat:"food"},
-    {e:"🥤", label:"drink cup", cat:"food"},
-    // 물건/기호
-    {e:"💡", label:"idea lamp", cat:"object"},
-    {e:"🔔", label:"bell", cat:"object"},
-    {e:"📌", label:"pin", cat:"object"},
-    {e:"📎", label:"paperclip", cat:"object"},
-    {e:"✏️", label:"pencil", cat:"object"},
-    {e:"📱", label:"smartphone", cat:"object"},
-    {e:"💻", label:"laptop", cat:"object"},
-    {e:"🔒", label:"lock", cat:"object"},
-    {e:"🧭", label:"compass", cat:"object"},
-    {e:"⚠️", label:"warning", cat:"object"},
-    // 깃발 (일부)
-    {e:"🇰🇷", label:"South Korea", cat:"flag"},
-    {e:"🇺🇸", label:"United States", cat:"flag"},
-    {e:"🇯🇵", label:"Japan", cat:"flag"},
-    {e:"🇨🇳", label:"China", cat:"flag"},
-    {e:"🇬🇧", label:"United Kingdom", cat:"flag"},
-    {e:"🇪🇺", label:"European Union", cat:"flag"},
-    // 기타 자주쓰는 이모지
-    {e:"✨", label:"sparkles", cat:"object"},
-    {e:"🎉", label:"party popper", cat:"object"},
-    {e:"✅", label:"check", cat:"object"},
-    {e:"❌", label:"cross", cat:"object"},
-    {e:"🔁", label:"repeat", cat:"object"},
-    {e:"📅", label:"calendar", cat:"object"},
-    {e:"💯", label:"100", cat:"object"},
-    {e:"🔍", label:"search", cat:"object"},
-    {e:"🍀", label:"four leaf clover", cat:"nature"},
-    {e:"❤️", label:"red heart (alt)", cat:"heart"}
-  ];
+const EMOJIS = [
+  // 하트/감정 (상단 우선)
+  {e:"❤️", label:"red heart", ko:"하트 사랑", cat:"heart"},
+  {e:"🧡", label:"orange heart", ko:"주황 하트", cat:"heart"},
+  {e:"💛", label:"yellow heart", ko:"노랑 하트", cat:"heart"},
+  {e:"💚", label:"green heart", ko:"초록 하트", cat:"heart"},
+  {e:"💙", label:"blue heart", ko:"파랑 하트", cat:"heart"},
+  {e:"💜", label:"purple heart", ko:"보라 하트", cat:"heart"},
+  {e:"🤍", label:"white heart", ko:"하얀 하트", cat:"heart"},
+  {e:"🖤", label:"black heart", ko:"검은 하트", cat:"heart"},
+  {e:"💖", label:"sparkling heart", ko:"반짝 하트", cat:"heart"},
+  {e:"💞", label:"revolving hearts", ko:"돌아가는 하트", cat:"heart"},
 
-  const grid = document.getElementById('grid');
-  const q = document.getElementById('q');
-  const category = document.getElementById('category');
-  const toast = document.getElementById('toast');
-  const copyAllBtn = document.getElementById('copyAllBtn');
+  // 음식/음료 (상단 우선)
+  {e:"🍕", label:"pizza", ko:"피자 음식", cat:"food"},
+  {e:"🍔", label:"burger", ko:"햄버거 음식", cat:"food"},
+  {e:"🍟", label:"fries", ko:"감자튀김 음식", cat:"food"},
+  {e:"🍜", label:"ramen", ko:"라면 국수", cat:"food"},
+  {e:"🍣", label:"sushi", ko:"초밥 음식", cat:"food"},
+  {e:"🍩", label:"donut", ko:"도넛 음식", cat:"food"},
+  {e:"🍪", label:"cookie", ko:"쿠키 음식", cat:"food"},
+  {e:"🍓", label:"strawberry", ko:"딸기 음식", cat:"food"},
+  {e:"🍑", label:"peach", ko:"복숭아 음식", cat:"food"},
+  {e:"🍀", label:"four leaf clover", ko:"행운 클로버", cat:"nature"},
 
-  function showToast(text){
-    toast.textContent = text;
-    toast.style.display = 'flex';
-    clearTimeout(toast._t);
-    toast._t = setTimeout(()=> { toast.style.display = 'none'; }, 1600);
-  }
+  // 표정/사람
+  {e:"😀", label:"grinning face", ko:"웃는 얼굴", cat:"smile"},
+  {e:"🥹", label:"holding back tears", ko:"울컥 눈물", cat:"smile"},
+  {e:"😂", label:"tears of joy", ko:"웃음 눈물", cat:"smile"},
+  {e:"😊", label:"smiling face", ko:"웃는 얼굴 미소", cat:"smile"},
+  {e:"😎", label:"sunglasses", ko:"선글라스 멋짐", cat:"smile"},
+  {e:"🤔", label:"thinking", ko:"생각 궁금", cat:"smile"},
+  {e:"🤗", label:"hug", ko:"포옹 안아줌", cat:"smile"},
+  {e:"😘", label:"kiss", ko:"키스 뽀뽀", cat:"smile"},
+  {e:"😍", label:"heart eyes", ko:"하트 눈 사랑", cat:"smile"},
 
-  function copyToClipboard(text){
-    if(!text) return;
-    // 우선 navigator.clipboard 사용
-    if(navigator.clipboard && navigator.clipboard.writeText){
-      return navigator.clipboard.writeText(text).then(()=> {
-        showToast(`복사됨: ${text}`);
-      }).catch(()=> {
-        // fallback
-        fallbackCopy(text);
-      });
-    } else {
-      fallbackCopy(text);
-    }
-  }
+  // 동물
+  {e:"🐶", label:"dog", ko:"강아지", cat:"animal"},
+  {e:"🐱", label:"cat", ko:"고양이", cat:"animal"},
+  {e:"🐻", label:"bear", ko:"곰", cat:"animal"},
+  {e:"🐰", label:"rabbit", ko:"토끼", cat:"animal"},
+  {e:"🐼", label:"panda", ko:"판다", cat:"animal"},
 
-  function fallbackCopy(text){
-    const ta = document.createElement('textarea');
-    ta.value = text;
-    // 모바일에서 textarea offscreen
-    ta.style.position = 'fixed';
-    ta.style.left = '-9999px';
+  // 기타
+  {e:"✨", label:"sparkles", ko:"반짝임", cat:"object"},
+  {e:"🎉", label:"party", ko:"축하 파티", cat:"object"},
+  {e:"💡", label:"idea", ko:"아이디어 전구", cat:"object"},
+  {e:"📱", label:"phone", ko:"휴대폰", cat:"object"},
+  {e:"✅", label:"check", ko:"체크 완료", cat:"object"},
+];
+
+const grid = document.getElementById("grid");
+const search = document.getElementById("search");
+const toast = document.getElementById("toast");
+const textArea = document.getElementById("textArea");
+const copyTextBtn = document.getElementById("copyText");
+
+function showToast(msg){
+  toast.textContent = msg;
+  toast.style.display = "block";
+  clearTimeout(toast._t);
+  toast._t = setTimeout(()=>toast.style.display="none",1500);
+}
+
+function copyToClipboard(text){
+  if(navigator.clipboard){
+    navigator.clipboard.writeText(text).then(()=>showToast("복사됨: "+text));
+  } else {
+    const ta=document.createElement("textarea");
+    ta.value=text;
     document.body.appendChild(ta);
     ta.select();
-    try {
-      document.execCommand('copy');
-      showToast(`복사됨: ${text}`);
-    } catch(e){
-      showToast('복사 실패 — 텍스트를 길게 눌러 수동 복사하세요');
-    }
+    document.execCommand("copy");
     document.body.removeChild(ta);
+    showToast("복사됨: "+text);
   }
+}
 
-  function buildCard(item){
-    const div = document.createElement('div');
-    div.className = 'card';
-    div.setAttribute('data-cat', item.cat);
-    div.setAttribute('data-label', item.label.toLowerCase());
-    div.setAttribute('data-emoji', item.e);
+function buildCard(item){
+  const div=document.createElement("div");
+  div.className="card";
+  const left=document.createElement("div");
+  left.style.display="flex";left.style.alignItems="center";
+  const em=document.createElement("div");
+  em.className="emoji";em.textContent=item.e;
+  em.addEventListener("click",()=>copyToClipboard(item.e));
+  const lbl=document.createElement("div");
+  lbl.className="label";lbl.textContent=item.ko||item.label;
+  left.appendChild(em);left.appendChild(lbl);
+  const btn=document.createElement("button");
+  btn.textContent="복사";
+  btn.addEventListener("click",()=>copyToClipboard(item.e));
+  div.appendChild(left);div.appendChild(btn);
+  return div;
+}
 
-    const left = document.createElement('div');
-    left.style.display = 'flex';
-    left.style.alignItems='center';
-
-    const em = document.createElement('div');
-    em.className = 'emoji';
-    em.textContent = item.e;
-    em.title = item.label;
-    em.setAttribute('role','button');
-    em.setAttribute('aria-label', item.label + ' 이모지 복사');
-
-    // 탭하면 바로 복사
-    em.addEventListener('click', ()=> copyToClipboard(item.e));
-    // 길게 누를 시 표준 메뉴가 뜨도록 터치 이벤트는 건드리지 않음
-
-    const lbl = document.createElement('div');
-    lbl.className = 'label';
-    lbl.textContent = item.label;
-
-    left.appendChild(em);
-    left.appendChild(lbl);
-
-    const btn = document.createElement('button');
-    btn.className = 'copy';
-    btn.type = 'button';
-    btn.textContent = '복사';
-    btn.addEventListener('click', ()=> copyToClipboard(item.e));
-
-    div.appendChild(left);
-    div.appendChild(btn);
-    return div;
-  }
-
-  function render(filterText = '', cat = 'all'){
-    grid.innerHTML = '';
-    const ft = filterText.trim().toLowerCase();
-    const filtered = EMOJIS.filter(it => {
-      if(cat !== 'all' && it.cat !== cat) return false;
-      if(!ft) return true;
-      return it.label.toLowerCase().includes(ft) || it.e.includes(ft);
-    });
-    if(filtered.length === 0){
-      grid.innerHTML = '<div style="grid-column:1/-1; color:var(--muted); padding:18px; text-align:center; background:transparent;">조건에 맞는 이모지가 없습니다.</div>';
-      return;
-    }
-    const frag = document.createDocumentFragment();
-    filtered.forEach(it => frag.appendChild(buildCard(it)));
-    grid.appendChild(frag);
-  }
-
-  // 현재 보이는 이모지 전체 복사
-  copyAllBtn.addEventListener('click', ()=>{
-    const visible = Array.from(grid.querySelectorAll('.card')).map(c => c.getAttribute('data-emoji'));
-    if(visible.length === 0){ showToast('복사할 항목이 없습니다'); return; }
-    const text = visible.join(' ');
-    copyToClipboard(text);
-  });
-
-  // 검색/필터 이벤트
-  q.addEventListener('input', ()=> render(q.value, category.value));
-  category.addEventListener('change', ()=> render(q.value, category.value));
-
-  // 초기 렌더
-  render();
-
-  // 키보드 Enter 복사: 검색창에서 enter 누르면 첫 항목 복사
-  q.addEventListener('keydown', (ev)=>{
-    if(ev.key === 'Enter'){
-      const first = grid.querySelector('.card');
-      if(first){
-        const e = first.getAttribute('data-emoji');
-        copyToClipboard(e);
-      }
+function render(){
+  const q=search.value.trim().toLowerCase();
+  grid.innerHTML="";
+  EMOJIS.forEach(item=>{
+    if(!q || item.label.toLowerCase().includes(q) || (item.ko&&item.ko.includes(q)) || item.e.includes(q)){
+      grid.appendChild(buildCard(item));
     }
   });
+  if(!grid.children.length){
+    grid.innerHTML='<div style="grid-column:1/-1;text-align:center;color:#888;padding:20px;">검색 결과 없음</div>';
+  }
+}
 
-  // 접근성: 스크린리더에 처음 항목 수 알려주기
-  document.addEventListener('DOMContentLoaded', ()=>{
-    const count = EMOJIS.length;
-    toast.textContent = `이모지 ${count}개 로드됨`;
-    toast.style.display = 'flex';
-    setTimeout(()=> toast.style.display = 'none', 1200);
-  });
+search.addEventListener("input",render);
+render();
+
+copyTextBtn.addEventListener("click",()=>{
+  const val=textArea.value.trim();
+  if(!val) return showToast("복사할 내용이 없습니다");
+  copyToClipboard(val);
+});
 </script>
 </body>
 </html>
