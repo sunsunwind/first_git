@@ -39,10 +39,11 @@ input {
     outline: none;
     background: transparent;
     font-size: 14px;
-    text-align: center;
 }
 
-.inline { width: 80px; }
+/* 정렬 */
+.center-input { text-align: center !important; }
+.right-input  { text-align: right !important; }
 .right { text-align: right; }
 
 /* 귀하 */
@@ -53,25 +54,17 @@ input {
     text-align: left;
 }
 
-/* 날짜 입력 */
+/* 날짜 */
 .date-input {
     width: 60px;
     border: none;
     border-bottom: 1px solid #000;
     text-align: center;
-    font-size: 14px;
 }
 .date-input.month,
-.date-input.day {
-    width: 40px;
-}
+.date-input.day { width: 40px; }
 
-/* 품명 / 규격 / 수량 가운데 정렬 */
-.item-row td:nth-child(1) input,
-.item-row td:nth-child(2) input,
-.item-row td:nth-child(3) input {
-    text-align: center;
-}
+.inline { width: 80px; }
 </style>
 </head>
 <body>
@@ -115,7 +108,7 @@ input {
 </tr>
 </table>
 
-<!-- 합계금액 (부가세 포함) -->
+<!-- 합계금액 -->
 <table style="margin-top:10px;">
 <tr>
 <td style="width:30%">합계금액(부가세 포함)</td>
@@ -139,34 +132,37 @@ input {
 
 <tbody>
 <tr class="item-row">
-<td><input></td>
-<td><input></td>
-<td><input class="qty" oninput="recalc()"></td>
-<td><input class="price" oninput="recalc()"></td>
+<td><input class="center-input"></td>
+<td><input class="center-input"></td>
+<td><input class="qty center-input" oninput="formatNumber(this); recalc();"></td>
+<td><input class="price right-input" oninput="formatNumber(this); recalc();"></td>
 <td class="row-total right"></td>
 <td><input></td>
 </tr>
+
 <tr class="item-row">
-<td><input></td>
-<td><input></td>
-<td><input class="qty" oninput="recalc()"></td>
-<td><input class="price" oninput="recalc()"></td>
+<td><input class="center-input"></td>
+<td><input class="center-input"></td>
+<td><input class="qty center-input" oninput="formatNumber(this); recalc();"></td>
+<td><input class="price right-input" oninput="formatNumber(this); recalc();"></td>
 <td class="row-total right"></td>
 <td><input></td>
 </tr>
+
 <tr class="item-row">
-<td><input></td>
-<td><input></td>
-<td><input class="qty" oninput="recalc()"></td>
-<td><input class="price" oninput="recalc()"></td>
+<td><input class="center-input"></td>
+<td><input class="center-input"></td>
+<td><input class="qty center-input" oninput="formatNumber(this); recalc();"></td>
+<td><input class="price right-input" oninput="formatNumber(this); recalc();"></td>
 <td class="row-total right"></td>
 <td><input></td>
 </tr>
+
 <tr class="item-row">
-<td><input></td>
-<td><input></td>
-<td><input class="qty" oninput="recalc()"></td>
-<td><input class="price" oninput="recalc()"></td>
+<td><input class="center-input"></td>
+<td><input class="center-input"></td>
+<td><input class="qty center-input" oninput="formatNumber(this); recalc();"></td>
+<td><input class="price right-input" oninput="formatNumber(this); recalc();"></td>
 <td class="row-total right"></td>
 <td><input></td>
 </tr>
@@ -189,19 +185,27 @@ input {
 
 </div>
 
-<!-- 버튼 -->
 <div style="text-align:center; margin:30px 0;">
     <button onclick="saveImage()">이미지 저장</button>
     <button onclick="window.print()">인쇄</button>
 </div>
 
 <script>
+function removeComma(v){
+    return Number(v.replace(/,/g,"")) || 0;
+}
+
+function formatNumber(el){
+    const n = removeComma(el.value);
+    el.value = n ? n.toLocaleString() : "";
+}
+
 function recalc(){
     let sum = 0;
 
     document.querySelectorAll(".item-row").forEach(r=>{
-        const q = parseFloat(r.querySelector(".qty").value) || 0;
-        const p = parseFloat(r.querySelector(".price").value) || 0;
+        const q = removeComma(r.querySelector(".qty").value);
+        const p = removeComma(r.querySelector(".price").value);
 
         if(q && p){
             const t = q * p;
@@ -223,7 +227,7 @@ function recalc(){
     const v = Math.round(sum * 0.1);
     const total = sum + v;
 
-    supplyAmount.innerText = total.toLocaleString(); // 합계금액
+    supplyAmount.innerText = total.toLocaleString();
     vat.innerText = v.toLocaleString();
     grandTotal.innerText = total.toLocaleString();
     korAmount.innerText = toKor(total) + " 원";
