@@ -27,9 +27,23 @@ td, th { border:1px solid #000; padding:6px; text-align:center; }
 
 .print-value { display:none; }
 
-/* 🔥 이미지/인쇄용 모드 */
+/* 🔥 출력 모드 */
 .print-mode .input { display:none !important; }
 .print-mode .print-value { display:inline !important; }
+.print-mode .no-print { display:none !important; }
+
+/* 공급자 세로 라벨 */
+.provider-wrap {
+    display:flex;
+}
+.provider-label {
+    writing-mode: vertical-rl;
+    text-orientation: upright;
+    border:1px solid #000;
+    padding:10px 6px;
+    font-weight:bold;
+    margin-right:4px;
+}
 </style>
 </head>
 <body>
@@ -50,21 +64,23 @@ td, th { border:1px solid #000; padding:6px; text-align:center; }
 
 <table>
 <tr>
-<td class="no-border" style="width:65%;">
+<td class="no-border" style="width:60%;">
     <input class="input inline" placeholder="상호 또는 성명" oninput="sync(this)">
     <span class="print-value"></span>
     <strong> 귀하</strong>
     <div style="margin-top:10px;">아래와 같이 견적합니다.</div>
 </td>
 
-<td style="width:35%;">
-    <table>
-        <tr><th colspan="2">공급자</th></tr>
-        <tr><td>성명</td><td>김석규</td></tr>
-        <tr><td>업태</td><td>방통</td></tr>
-        <tr><td>종목</td><td>미장공사</td></tr>
-        <tr><td>연락처</td><td>010-3852-4574</td></tr>
-    </table>
+<td style="width:40%;">
+    <div class="provider-wrap">
+        <div class="provider-label">공급자</div>
+        <table>
+            <tr><td>성명</td><td>김석규</td></tr>
+            <tr><td>업태</td><td>방통</td></tr>
+            <tr><td>종목</td><td>미장공사</td></tr>
+            <tr><td>연락처</td><td>010-3852-4574</td></tr>
+        </table>
+    </div>
 </td>
 </tr>
 </table>
@@ -85,6 +101,7 @@ td, th { border:1px solid #000; padding:6px; text-align:center; }
 <th>품명</th><th>규격</th><th>수량</th><th>단가</th><th>총액</th><th>비고</th>
 </tr>
 </thead>
+
 <tbody id="itemBody">
 <tr class="item-row">
 <td><input class="input"></td>
@@ -109,11 +126,13 @@ td, th { border:1px solid #000; padding:6px; text-align:center; }
 </tr>
 </table>
 
-<button onclick="addRow()" style="margin-top:8px;">+ 행 추가</button>
+<!-- 행 추가 버튼 -->
+<button onclick="addRow()" class="no-print" style="margin-top:8px;">+ 행 추가</button>
 
 </div>
 
-<div style="text-align:center; margin-top:20px;">
+<!-- 하단 버튼 -->
+<div style="text-align:center; margin-top:20px;" class="no-print">
 <button onclick="saveImage()">이미지 저장</button>
 <button onclick="printDoc()">인쇄</button>
 </div>
@@ -166,7 +185,7 @@ function toKor(num){
     return r.trim()||"영";
 }
 
-/* 🔥 이미지 저장 핵심 */
+/* 이미지 저장 */
 function saveImage(){
     const el=document.getElementById("estimate");
     el.classList.add("print-mode");
@@ -181,6 +200,7 @@ function saveImage(){
     },100);
 }
 
+/* 인쇄 */
 function printDoc(){
     const el=document.getElementById("estimate");
     el.classList.add("print-mode");
