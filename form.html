@@ -44,10 +44,10 @@ input {
 .inline { width: 60px; }
 .right { text-align: right; }
 
-/* 귀하 입력 (크게 유지) */
+/* 귀하 입력 (크게) */
 .recipient-input {
     width: 260px;
-    font-size: 28px;
+    font-size: 28px;        /* 귀하보다 크게 */
     font-weight: bold;
     border-bottom: 1px solid #000;
     text-align: left;
@@ -58,14 +58,6 @@ input {
     width: 60px;
     border-bottom: 1px solid #000;
     font-size: 14px;
-}
-
-/* 🔙 버튼 기본 크기 (롤백) */
-.action-btn {
-    font-size: 14px;
-    padding: 6px 14px;
-    margin: 0 6px;
-    cursor: pointer;
 }
 </style>
 </head>
@@ -96,7 +88,7 @@ input {
 
 <td style="width:40%;">
     <table>
-        <tr><th colspan="2">공  급  자</th></tr>
+        <tr><th colspan="2">공급자</th></tr>
         <tr><td>성명</td><td>김석규</td></tr>
         <tr><td>업태</td><td>방통</td></tr>
         <tr><td>종목</td><td>미장공사</td></tr>
@@ -180,10 +172,10 @@ input {
 
 </div>
 
-<!-- ❌ 이미지 / 인쇄에 안 찍힘 -->
+<!-- ❌ 저장 / 인쇄에 안 찍힘 -->
 <div style="text-align:center; margin:30px 0;">
-    <button class="action-btn" onclick="saveImage()">이미지 저장</button>
-    <button class="action-btn" onclick="window.print()">인쇄</button>
+    <button onclick="saveImage()">이미지 저장</button>
+    <button onclick="window.print()">인쇄</button>
 </div>
 
 <script>
