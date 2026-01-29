@@ -44,7 +44,7 @@ input {
 .inline { width: 60px; }
 .right { text-align: right; }
 
-/* 귀하 입력 (크게) */
+/* 귀하 입력 (크게 유지) */
 .recipient-input {
     width: 260px;
     font-size: 28px;
@@ -60,11 +60,11 @@ input {
     font-size: 14px;
 }
 
-/* 🔥 버튼 크게 */
+/* 🔙 버튼 기본 크기 (롤백) */
 .action-btn {
-    font-size: 18px;
-    padding: 12px 26px;
-    margin: 0 10px;
+    font-size: 14px;
+    padding: 6px 14px;
+    margin: 0 6px;
     cursor: pointer;
 }
 </style>
@@ -180,7 +180,7 @@ input {
 
 </div>
 
-<!-- ❌ 이미지/인쇄에 안 찍힘 -->
+<!-- ❌ 이미지 / 인쇄에 안 찍힘 -->
 <div style="text-align:center; margin:30px 0;">
     <button class="action-btn" onclick="saveImage()">이미지 저장</button>
     <button class="action-btn" onclick="window.print()">인쇄</button>
