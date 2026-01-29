@@ -6,145 +6,172 @@
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
 <style>
-    body { font-family: "Noto Sans KR", Arial; }
-    .sheet { width: 900px; margin:auto; border:2px solid #000; padding:20px; }
-    h1 { text-align:center; letter-spacing:10px; }
+body { font-family:"Noto Sans KR", Arial; }
+.sheet { width:900px; margin:auto; border:2px solid #000; padding:20px; }
+h1 { text-align:center; letter-spacing:10px; }
 
-    table { width:100%; border-collapse:collapse; font-size:14px; }
-    td, th { border:1px solid #000; padding:6px; text-align:center; }
+table { width:100%; border-collapse:collapse; font-size:14px; }
+td, th { border:1px solid #000; padding:6px; text-align:center; }
 
-    .no-border { border:none; }
-    .right { text-align:right; }
+.no-border { border:none; text-align:left; }
 
-    /* 입력 가능 영역 스타일 */
-    .input-box {
-        width:100%;
-        border:1px dashed #999;
-        background:#f9f9f9;
-        outline:none;
-        text-align:center;
-        font-size:14px;
-        padding:4px;
-    }
+.input {
+    width:100%;
+    border:1px dashed #aaa;
+    background:#fafafa;
+    padding:3px;
+    font-size:14px;
+    text-align:center;
+}
 
-    .input-box:focus {
-        border:1px solid #333;
-        background:#fff;
-    }
+.inline-input {
+    width:200px;
+}
 
-    .actions { text-align:center; margin-top:20px; }
+.print-value {
+    display:none;
+    font-size:14px;
+}
 
-    @media print {
-        body * { visibility:hidden; }
-        .sheet, .sheet * { visibility:visible; }
-        .sheet { position:absolute; left:0; top:0; }
-    }
+@media print {
+    .input { display:none; }
+    .print-value { display:inline; }
+}
 </style>
 </head>
 <body>
 
 <div class="sheet" id="estimate">
 
-    <!-- No / 날짜 -->
-    <div style="display:flex; justify-content:space-between;">
-        <div>
-            No.
-            <input class="input-box" style="width:120px;" placeholder="번호 입력">
-        </div>
-        <input type="date" class="input-box" style="width:160px;">
+<!-- No / 날짜 -->
+<div style="display:flex; justify-content:space-between;">
+    <div>
+        No.
+        <input class="input inline-input" oninput="sync(this,'noPrint')">
+        <span class="print-value" id="noPrint"></span>
     </div>
+    <input type="date" class="input inline-input">
+</div>
 
-    <h1>견 적 서</h1>
+<h1>견 적 서</h1>
 
+<table>
+<tr>
+<td class="no-border" style="width:65%;">
+    <input class="input inline-input" placeholder="상호 또는 성명"
+           oninput="sync(this,'clientPrint')">
+    <span class="print-value" id="clientPrint"></span>
+    <strong> 귀하</strong>
+    <div style="margin-top:10px;">아래와 같이 견적합니다.</div>
+</td>
+
+<td style="width:35%;">
     <table>
-        <tr>
-            <td class="no-border" style="width:70%; text-align:left;">
-                <!-- 귀하 입력 -->
-                <input id="clientName" class="input-box" style="width:300px; text-align:left;"
-                       placeholder="상호 / 성명 입력"
-                       oninput="updateClient()">
-                <strong> 귀하</strong>
-
-                <div style="margin-top:15px;">아래와 같이 견적합니다.</div>
-            </td>
-
-            <td style="width:30%">
-                <table>
-                    <tr><td>업태</td><td>방통</td></tr>
-                    <tr><td>종목</td><td>미장공사</td></tr>
-                    <tr><td>연락처</td><td>010-3852-4574</td></tr>
-                </table>
-            </td>
-        </tr>
+        <tr><th colspan="2">공급자</th></tr>
+        <tr><td>성명</td><td>김석규</td></tr>
+        <tr><td>업태</td><td>방통</td></tr>
+        <tr><td>종목</td><td>미장공사</td></tr>
+        <tr><td>연락처</td><td>010-3852-4574</td></tr>
     </table>
+</td>
+</tr>
+</table>
 
-    <!-- 합계금액 -->
-    <table style="margin-top:10px;">
-        <tr>
-            <td style="width:30%">합계금액(공급가액)</td>
-            <td style="width:40%" id="korAmount">금액 자동 계산</td>
-            <td style="width:30%" class="right" id="supplyAmount">0</td>
-        </tr>
-    </table>
+<!-- 합계금액 -->
+<table style="margin-top:10px;">
+<tr>
+<td style="width:30%">합계금액(공급가액)</td>
+<td style="width:40%" id="korAmount">영 원</td>
+<td style="width:30%" class="right" id="supplyAmount">0</td>
+</tr>
+</table>
 
-    <!-- 품목 -->
-    <table style="margin-top:10px;">
-        <tr>
-            <th>품명</th>
-            <th>규격</th>
-            <th>수량</th>
-            <th>단가</th>
-            <th>총액</th>
-            <th>비고</th>
-        </tr>
+<!-- 품목 -->
+<table style="margin-top:10px;">
+<tr>
+<th>품명</th><th>규격</th><th>수량</th><th>단가</th><th>총액</th><th>비고</th>
+</tr>
 
-        <tr>
-            <td><input class="input-box"></td>
-            <td><input class="input-box"></td>
-            <td><input id="qty" class="input-box" oninput="calculate()"></td>
-            <td><input id="price" class="input-box" oninput="calculate()"></td>
-            <td id="total">0</td>
-            <td><input class="input-box"></td>
-        </tr>
+<tr>
+<td><input class="input"></td>
+<td><input class="input"></td>
+<td><input class="input" id="qty" oninput="calculate()"></td>
+<td><input class="input" id="price" oninput="calculate()"></td>
+<td id="total">0</td>
+<td><input class="input"></td>
+</tr>
 
-        <tr>
-            <td>부가세</td>
-            <td colspan="3"></td>
-            <td id="vat">0</td>
-            <td></td>
-        </tr>
+<tr>
+<td>부가세</td><td colspan="3"></td>
+<td id="vat">0</td><td></td>
+</tr>
 
-        <tr>
-            <td><strong>계(부가세 포함)</strong></td>
-            <td colspan="3"></td>
-            <td id="grandTotal"><strong>0</strong></td>
-            <td></td>
-        </tr>
-    </table>
+<tr>
+<td><strong>계(부가세 포함)</strong></td>
+<td colspan="3"></td>
+<td id="grandTotal"><strong>0</strong></td>
+<td></td>
+</tr>
+</table>
 
 </div>
 
-<div class="actions">
-    <button onclick="saveImage()">이미지 저장</button>
-    <button onclick="window.print()">인쇄</button>
+<div style="text-align:center; margin-top:20px;">
+<button onclick="saveImage()">이미지 저장</button>
+<button onclick="window.print()">인쇄</button>
 </div>
 
 <script>
+function sync(input, spanId) {
+    document.getElementById(spanId).innerText = input.value;
+}
+
 function calculate() {
-    const qty = Number(document.getElementById("qty").value) || 0;
-    const price = Number(document.getElementById("price").value) || 0;
+    const qty = Number(qtyInput.value) || 0;
+    const price = Number(priceInput.value) || 0;
 
     const total = qty * price;
     const vat = Math.round(total * 0.1);
     const grand = total + vat;
 
-    document.getElementById("total").innerText = total.toLocaleString();
-    document.getElementById("vat").innerText = vat.toLocaleString();
-    document.getElementById("grandTotal").innerText = grand.toLocaleString();
+    totalCell.innerText = total.toLocaleString();
+    vatCell.innerText = vat.toLocaleString();
+    grandCell.innerText = grand.toLocaleString();
+    supplyAmount.innerText = total.toLocaleString();
+    korAmount.innerText = numberToKorean(total) + " 원";
+}
 
-    document.getElementById("supplyAmount").innerText = total.toLocaleString();
-    document.getElementById("korAmount").innerText =
-        "금 " + total.toLocaleString() + " 원";
+const qtyInput = document.getElementById("qty");
+const priceInput = document.getElementById("price");
+const totalCell = document.getElementById("total");
+const vatCell = document.getElementById("vat");
+const grandCell = document.getElementById("grandTotal");
+const supplyAmount = document.getElementById("supplyAmount");
+const korAmount = document.getElementById("korAmount");
+
+/* 숫자 → 한글 금액 */
+function numberToKorean(num) {
+    const units = ["","만","억","조"];
+    const nums = ["영","일","이","삼","사","오","육","칠","팔","구"];
+    const tens = ["","십","백","천"];
+    let result = "";
+
+    let unitIndex = 0;
+    while(num > 0) {
+        let chunk = num % 10000;
+        if(chunk > 0) {
+            let chunkStr = "";
+            for(let i=0;i<4;i++) {
+                const digit = chunk % 10;
+                if(digit > 0) chunkStr = nums[digit] + tens[i] + chunkStr;
+                chunk = Math.floor(chunk/10);
+            }
+            result = chunkStr + units[unitIndex] + " " + result;
+        }
+        num = Math.floor(num/10000);
+        unitIndex++;
+    }
+    return result.trim() || "영";
 }
 
 function saveImage() {
