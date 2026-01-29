@@ -34,7 +34,6 @@ td, th {
 }
 
 input {
-    width: 100%;
     border: none;
     outline: none;
     background: transparent;
@@ -42,27 +41,47 @@ input {
     text-align: center;
 }
 
-.inline { width: 160px; }
+.inline { width: 60px; }
 .right { text-align: right; }
 
-/* 귀하 입력 */
+/* 귀하 입력 (크게) */
 .recipient-input {
-    font-size: 16px;
+    width: 260px;
+    font-size: 28px;
     font-weight: bold;
     border-bottom: 1px solid #000;
     text-align: left;
+}
+
+/* 날짜 숫자 입력 */
+.date-input {
+    width: 60px;
+    border-bottom: 1px solid #000;
+    font-size: 14px;
+}
+
+/* 🔥 버튼 크게 */
+.action-btn {
+    font-size: 18px;
+    padding: 12px 26px;
+    margin: 0 10px;
+    cursor: pointer;
 }
 </style>
 </head>
 <body>
 
-<!-- 🔥 저장/인쇄 대상 -->
+<!-- 📄 저장 / 인쇄 대상 -->
 <div class="sheet" id="estimate">
 
 <!-- No / 날짜 -->
-<div style="display:flex; justify-content:space-between;">
+<div style="display:flex; justify-content:space-between; align-items:center;">
     <div>No. <input class="inline"></div>
-    <input type="date" class="inline">
+    <div>
+        <input class="date-input" maxlength="4"> 년
+        <input class="date-input" maxlength="2"> 월
+        <input class="date-input" maxlength="2"> 일
+    </div>
 </div>
 
 <h1>견 적 서</h1>
@@ -70,14 +89,14 @@ input {
 <table>
 <tr>
 <td class="no-border" style="width:60%;">
-    <input class="inline recipient-input">
-    <strong> 귀하</strong>
+    <input class="recipient-input">
+    <strong style="font-size:16px;"> 귀하</strong>
     <div style="margin-top:10px;">아래와 같이 견적합니다.</div>
 </td>
 
 <td style="width:40%;">
     <table>
-        <tr><th colspan="2">공급자</th></tr>
+        <tr><th colspan="2">공  급  자</th></tr>
         <tr><td>성명</td><td>김석규</td></tr>
         <tr><td>업태</td><td>방통</td></tr>
         <tr><td>종목</td><td>미장공사</td></tr>
@@ -161,10 +180,10 @@ input {
 
 </div>
 
-<!-- ❌ 이미지/인쇄에 절대 안 찍힘 -->
+<!-- ❌ 이미지/인쇄에 안 찍힘 -->
 <div style="text-align:center; margin:30px 0;">
-    <button onclick="saveImage()">이미지 저장</button>
-    <button onclick="window.print()">인쇄</button>
+    <button class="action-btn" onclick="saveImage()">이미지 저장</button>
+    <button class="action-btn" onclick="window.print()">인쇄</button>
 </div>
 
 <script>
