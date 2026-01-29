@@ -82,8 +82,8 @@ input {
 <table style="margin-top:10px;">
 <tr>
 <td style="width:30%">합계금액(공급가액)</td>
-<td style="width:40%" id="korAmount">영 원</td>
-<td style="width:30%" class="right" id="supplyAmount">0</td>
+<td style="width:40%" id="korAmount"></td>
+<td style="width:30%" class="right" id="supplyAmount"></td>
 </tr>
 </table>
 
@@ -106,7 +106,7 @@ input {
 <td><input></td>
 <td><input class="qty" oninput="recalc()"></td>
 <td><input class="price" oninput="recalc()"></td>
-<td class="row-total right">0</td>
+<td class="row-total right"></td>
 <td><input></td>
 </tr>
 <tr class="item-row">
@@ -114,7 +114,7 @@ input {
 <td><input></td>
 <td><input class="qty" oninput="recalc()"></td>
 <td><input class="price" oninput="recalc()"></td>
-<td class="row-total right">0</td>
+<td class="row-total right"></td>
 <td><input></td>
 </tr>
 <tr class="item-row">
@@ -122,7 +122,7 @@ input {
 <td><input></td>
 <td><input class="qty" oninput="recalc()"></td>
 <td><input class="price" oninput="recalc()"></td>
-<td class="row-total right">0</td>
+<td class="row-total right"></td>
 <td><input></td>
 </tr>
 <tr class="item-row">
@@ -130,7 +130,7 @@ input {
 <td><input></td>
 <td><input class="qty" oninput="recalc()"></td>
 <td><input class="price" oninput="recalc()"></td>
-<td class="row-total right">0</td>
+<td class="row-total right"></td>
 <td><input></td>
 </tr>
 </tbody>
@@ -138,14 +138,14 @@ input {
 <tr>
 <td>부가세</td>
 <td colspan="3"></td>
-<td class="right" id="vat">0</td>
+<td class="right" id="vat"></td>
 <td></td>
 </tr>
 
 <tr>
 <td><strong>계(부가세 포함)</strong></td>
 <td colspan="3"></td>
-<td class="right" id="grandTotal"><strong>0</strong></td>
+<td class="right" id="grandTotal"><strong></strong></td>
 <td></td>
 </tr>
 </table>
@@ -160,13 +160,27 @@ input {
 <script>
 function recalc(){
     let sum = 0;
+
     document.querySelectorAll(".item-row").forEach(r=>{
-        const q = Number(r.querySelector(".qty").value) || 0;
-        const p = Number(r.querySelector(".price").value) || 0;
-        const t = q * p;
-        r.querySelector(".row-total").innerText = t.toLocaleString();
-        sum += t;
+        const q = Number(r.querySelector(".qty").value);
+        const p = Number(r.querySelector(".price").value);
+
+        if(q && p){
+            const t = q * p;
+            r.querySelector(".row-total").innerText = t.toLocaleString();
+            sum += t;
+        } else {
+            r.querySelector(".row-total").innerText = "";
+        }
     });
+
+    if(sum === 0){
+        document.getElementById("supplyAmount").innerText = "";
+        document.getElementById("vat").innerText = "";
+        document.getElementById("grandTotal").innerText = "";
+        document.getElementById("korAmount").innerText = "";
+        return;
+    }
 
     const vat = Math.round(sum * 0.1);
     document.getElementById("supplyAmount").innerText = sum.toLocaleString();
