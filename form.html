@@ -93,6 +93,13 @@ button { padding: 20px 40px; font-size: 60px; font-weight: bold; cursor: pointer
     <tr class="item-row"><td><input></td><td><input class="center-input"></td><td><input class="right-input" oninput="formatNumber(this);"></td><td><input class="row-total-input right-input" oninput="formatNumber(this); recalc();"></td><td><input></td></tr>
 
     <tr>
+    <td>합계</td>
+    <td colspan="2"></td>
+    <td class="right" id="subTotal"></td>
+    <td></td>
+    </tr>
+    
+    <tr>
     <td>부가세</td>
     <td colspan="2"></td>
     <td class="right" id="vat"></td>
@@ -117,7 +124,7 @@ button { padding: 20px 40px; font-size: 60px; font-weight: bold; cursor: pointer
 <script>
 function removeComma(v){ return v.toString().replace(/,/g,""); }
 function formatNumber(el){ 
-    let value = el.value.replace(/[^0-9]/g, ""); // 숫자만 남기기
+    let value = el.value.replace(/[^0-9]/g, ""); 
     if(value) {
         el.value = Number(value).toLocaleString();
     } else {
@@ -132,13 +139,15 @@ function recalc(){
     });
     
     if(!totalSum){ 
-        vat.innerText = grandTotal.innerText = korAmount.innerText = supplyAmount.innerText = ""; 
+        subTotal.innerText = vat.innerText = grandTotal.innerText = korAmount.innerText = supplyAmount.innerText = ""; 
         return;
     }
     
     const v = Math.round(totalSum * 0.1); 
     const finalTotal = totalSum + v;      
     
+    // 계산 결과 화면 반영
+    subTotal.innerText = totalSum.toLocaleString(); // 부가세 제외 순수 합계
     vat.innerText = v.toLocaleString();
     grandTotal.innerText = finalTotal.toLocaleString();
     supplyAmount.innerText = finalTotal.toLocaleString();
