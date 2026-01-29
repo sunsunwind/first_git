@@ -45,8 +45,10 @@ input {
 .inline { width: 160px; }
 .right { text-align: right; }
 
-/* 밑줄 입력 */
-.underline-input {
+/* 귀하 입력 */
+.recipient-input {
+    font-size: 16px;
+    font-weight: bold;
     border-bottom: 1px solid #000;
     text-align: left;
 }
@@ -54,6 +56,7 @@ input {
 </head>
 <body>
 
+<!-- 🔥 저장/인쇄 대상 -->
 <div class="sheet" id="estimate">
 
 <!-- No / 날짜 -->
@@ -67,7 +70,7 @@ input {
 <table>
 <tr>
 <td class="no-border" style="width:60%;">
-    <input class="inline underline-input">
+    <input class="inline recipient-input">
     <strong> 귀하</strong>
     <div style="margin-top:10px;">아래와 같이 견적합니다.</div>
 </td>
@@ -156,11 +159,12 @@ input {
 </tr>
 </table>
 
-<div style="text-align:center; margin-top:20px;">
-    <button onclick="saveImage()">이미지 저장</button>
-    <button onclick="window.print()">인쇄</button>
 </div>
 
+<!-- ❌ 이미지/인쇄에 절대 안 찍힘 -->
+<div style="text-align:center; margin:30px 0;">
+    <button onclick="saveImage()">이미지 저장</button>
+    <button onclick="window.print()">인쇄</button>
 </div>
 
 <script>
