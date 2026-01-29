@@ -27,15 +27,13 @@ td, th { border:1px solid #000; padding:6px; text-align:center; }
 
 .print-value { display:none; }
 
-/* 🔥 출력 모드 */
+/* 출력 모드 */
 .print-mode .input { display:none !important; }
 .print-mode .print-value { display:inline !important; }
 .print-mode .no-print { display:none !important; }
 
 /* 공급자 세로 라벨 */
-.provider-wrap {
-    display:flex;
-}
+.provider-wrap { display:flex; }
 .provider-label {
     writing-mode: vertical-rl;
     text-orientation: upright;
@@ -104,12 +102,27 @@ td, th { border:1px solid #000; padding:6px; text-align:center; }
 
 <tbody id="itemBody">
 <tr class="item-row">
-<td><input class="input"></td>
-<td><input class="input"></td>
-<td><input class="input qty" oninput="recalc()"></td>
-<td><input class="input price" oninput="recalc()"></td>
+<td>
+    <input class="input" oninput="sync(this)">
+    <span class="print-value"></span>
+</td>
+<td>
+    <input class="input" oninput="sync(this)">
+    <span class="print-value"></span>
+</td>
+<td>
+    <input class="input qty" oninput="sync(this); recalc()">
+    <span class="print-value"></span>
+</td>
+<td>
+    <input class="input price" oninput="sync(this); recalc()">
+    <span class="print-value"></span>
+</td>
 <td class="row-total">0</td>
-<td><input class="input"></td>
+<td>
+    <input class="input" oninput="sync(this)">
+    <span class="print-value"></span>
+</td>
 </tr>
 </tbody>
 
@@ -126,12 +139,10 @@ td, th { border:1px solid #000; padding:6px; text-align:center; }
 </tr>
 </table>
 
-<!-- 행 추가 버튼 -->
 <button onclick="addRow()" class="no-print" style="margin-top:8px;">+ 행 추가</button>
 
 </div>
 
-<!-- 하단 버튼 -->
 <div style="text-align:center; margin-top:20px;" class="no-print">
 <button onclick="saveImage()">이미지 저장</button>
 <button onclick="printDoc()">인쇄</button>
@@ -146,6 +157,7 @@ function addRow(){
     const row=document.querySelector(".item-row");
     const clone=row.cloneNode(true);
     clone.querySelectorAll("input").forEach(i=>i.value="");
+    clone.querySelectorAll(".print-value").forEach(s=>s.innerText="");
     clone.querySelector(".row-total").innerText="0";
     document.getElementById("itemBody").appendChild(clone);
 }
@@ -185,7 +197,6 @@ function toKor(num){
     return r.trim()||"영";
 }
 
-/* 이미지 저장 */
 function saveImage(){
     const el=document.getElementById("estimate");
     el.classList.add("print-mode");
@@ -200,7 +211,6 @@ function saveImage(){
     },100);
 }
 
-/* 인쇄 */
 function printDoc(){
     const el=document.getElementById("estimate");
     el.classList.add("print-mode");
