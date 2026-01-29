@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>견적서</title> 
+<title>견적서</title>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
 <style>
@@ -42,7 +42,7 @@ input {
     text-align: center;
 }
 
-.inline { width: 160px; }
+.inline { width: 80px; }
 .right { text-align: right; }
 
 /* 귀하 */
@@ -60,11 +60,17 @@ input {
     border-bottom: 1px solid #000;
     text-align: center;
     font-size: 14px;
-    outline: none;
 }
 .date-input.month,
 .date-input.day {
     width: 40px;
+}
+
+/* 품명 / 규격 / 수량 가운데 정렬 */
+.item-row td:nth-child(1) input,
+.item-row td:nth-child(2) input,
+.item-row td:nth-child(3) input {
+    text-align: center;
 }
 </style>
 </head>
@@ -99,7 +105,7 @@ input {
 
 <td style="width:40%;">
     <table>
-        <tr><th colspan="2">공   급   자</th></tr>
+        <tr><th colspan="2">공 급 자</th></tr>
         <tr><td>성명</td><td>김석규</td></tr>
         <tr><td>업태</td><td>방통</td></tr>
         <tr><td>종목</td><td>미장공사</td></tr>
@@ -109,10 +115,10 @@ input {
 </tr>
 </table>
 
-<!-- 합계금액 -->
+<!-- 합계금액 (부가세 포함) -->
 <table style="margin-top:10px;">
 <tr>
-<td style="width:30%">합계금액(공급가액)</td>
+<td style="width:30%">합계금액(부가세 포함)</td>
 <td style="width:40%" id="korAmount"></td>
 <td style="width:30%" class="right" id="supplyAmount"></td>
 </tr>
@@ -175,7 +181,7 @@ input {
 <tr>
 <td><strong>계(부가세 포함)</strong></td>
 <td colspan="3"></td>
-<td class="right" id="grandTotal"><strong></strong></td>
+<td class="right" id="grandTotal"></td>
 <td></td>
 </tr>
 </tbody>
@@ -183,7 +189,7 @@ input {
 
 </div>
 
-<!-- 버튼 (이미지/인쇄 제외 영역) -->
+<!-- 버튼 -->
 <div style="text-align:center; margin:30px 0;">
     <button onclick="saveImage()">이미지 저장</button>
     <button onclick="window.print()">인쇄</button>
@@ -215,10 +221,12 @@ function recalc(){
     }
 
     const v = Math.round(sum * 0.1);
-    supplyAmount.innerText = sum.toLocaleString();
+    const total = sum + v;
+
+    supplyAmount.innerText = total.toLocaleString(); // 합계금액
     vat.innerText = v.toLocaleString();
-    grandTotal.innerText = (sum + v).toLocaleString();
-    korAmount.innerText = toKor(sum) + " 원";
+    grandTotal.innerText = total.toLocaleString();
+    korAmount.innerText = toKor(total) + " 원";
 }
 
 function toKor(num){
