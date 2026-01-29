@@ -14,23 +14,16 @@ table { width:100%; border-collapse:collapse; font-size:14px; }
 td, th { border:1px solid #000; padding:6px; text-align:center; }
 .no-border { border:none; text-align:left; }
 
-.input {
+input {
     width:100%;
-    border:1px dashed #aaa;
-    background:#fafafa;
-    padding:3px;
+    border:none;
+    outline:none;
     font-size:14px;
     text-align:center;
+    background:transparent;
 }
 
 .inline { width:160px; }
-
-.print-value { display:none; }
-
-/* 출력 모드 */
-.print-mode .input { display:none !important; }
-.print-mode .print-value { display:inline !important; }
-.print-mode .no-print { display:none !important; }
 
 /* 공급자 세로 라벨 */
 .provider-wrap { display:flex; }
@@ -52,10 +45,9 @@ td, th { border:1px solid #000; padding:6px; text-align:center; }
 <div style="display:flex; justify-content:space-between;">
     <div>
         No.
-        <input class="input inline" oninput="sync(this)">
-        <span class="print-value"></span>
+        <input class="inline">
     </div>
-    <input type="date" class="input inline">
+    <input type="date" class="inline">
 </div>
 
 <h1>견 적 서</h1>
@@ -63,8 +55,7 @@ td, th { border:1px solid #000; padding:6px; text-align:center; }
 <table>
 <tr>
 <td class="no-border" style="width:60%;">
-    <input class="input inline" placeholder="상호 또는 성명" oninput="sync(this)">
-    <span class="print-value"></span>
+    <input class="inline" placeholder="상호 또는 성명">
     <strong> 귀하</strong>
     <div style="margin-top:10px;">아래와 같이 견적합니다.</div>
 </td>
@@ -83,7 +74,7 @@ td, th { border:1px solid #000; padding:6px; text-align:center; }
 </tr>
 </table>
 
-<!-- 합계금액 -->
+<!-- 합계 -->
 <table style="margin-top:10px;">
 <tr>
 <td style="width:30%">합계금액(공급가액)</td>
@@ -102,27 +93,12 @@ td, th { border:1px solid #000; padding:6px; text-align:center; }
 
 <tbody id="itemBody">
 <tr class="item-row">
-<td>
-    <input class="input" oninput="sync(this)">
-    <span class="print-value"></span>
-</td>
-<td>
-    <input class="input" oninput="sync(this)">
-    <span class="print-value"></span>
-</td>
-<td>
-    <input class="input qty" oninput="sync(this); recalc()">
-    <span class="print-value"></span>
-</td>
-<td>
-    <input class="input price" oninput="sync(this); recalc()">
-    <span class="print-value"></span>
-</td>
+<td><input></td>
+<td><input></td>
+<td><input class="qty" oninput="recalc()"></td>
+<td><input class="price" oninput="recalc()"></td>
 <td class="row-total">0</td>
-<td>
-    <input class="input" oninput="sync(this)">
-    <span class="print-value"></span>
-</td>
+<td><input></td>
 </tr>
 </tbody>
 
@@ -139,25 +115,20 @@ td, th { border:1px solid #000; padding:6px; text-align:center; }
 </tr>
 </table>
 
-<button onclick="addRow()" class="no-print" style="margin-top:8px;">+ 행 추가</button>
+<button onclick="addRow()" style="margin-top:8px;">+ 행 추가</button>
 
 </div>
 
-<div style="text-align:center; margin-top:20px;" class="no-print">
+<div style="text-align:center; margin-top:20px;">
 <button onclick="saveImage()">이미지 저장</button>
-<button onclick="printDoc()">인쇄</button>
+<button onclick="window.print()">인쇄</button>
 </div>
 
 <script>
-function sync(input){
-    input.nextElementSibling.innerText = input.value;
-}
-
 function addRow(){
     const row=document.querySelector(".item-row");
     const clone=row.cloneNode(true);
     clone.querySelectorAll("input").forEach(i=>i.value="");
-    clone.querySelectorAll(".print-value").forEach(s=>s.innerText="");
     clone.querySelector(".row-total").innerText="0";
     document.getElementById("itemBody").appendChild(clone);
 }
@@ -198,26 +169,13 @@ function toKor(num){
 }
 
 function saveImage(){
-    const el=document.getElementById("estimate");
-    el.classList.add("print-mode");
-    setTimeout(()=>{
-        html2canvas(el,{scale:2}).then(c=>{
-            const a=document.createElement("a");
-            a.download="견적서.png";
-            a.href=c.toDataURL();
-            a.click();
-            el.classList.remove("print-mode");
-        });
-    },100);
-}
-
-function printDoc(){
-    const el=document.getElementById("estimate");
-    el.classList.add("print-mode");
-    setTimeout(()=>{
-        window.print();
-        el.classList.remove("print-mode");
-    },100);
+    html2canvas(document.getElementById("estimate"), {scale:2})
+    .then(c=>{
+        const a=document.createElement("a");
+        a.download="견적서.png";
+        a.href=c.toDataURL();
+        a.click();
+    });
 }
 </script>
 
