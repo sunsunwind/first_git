@@ -45,18 +45,31 @@ input {
 .inline { width: 80px; }
 .right { text-align: right; }
 
-/* 귀하 입력 */
+/* 귀하 */
 .recipient-input {
     font-size: 16px;
     font-weight: bold;
     border-bottom: 1px solid #000;
     text-align: left;
 }
+
+/* 날짜 입력 */
+.date-input {
+    width: 60px;
+    border: none;
+    border-bottom: 1px solid #000;
+    text-align: center;
+    font-size: 14px;
+    outline: none;
+}
+.date-input.month,
+.date-input.day {
+    width: 40px;
+}
 </style>
 </head>
 <body>
 
-<!-- 🔥 저장/인쇄 대상 -->
 <div class="sheet" id="estimate">
 
 <!-- No / 날짜 -->
@@ -70,8 +83,14 @@ input {
 <table>
 <tr>
 <td class="no-border" style="width:60%;">
-    
-</div>
+
+    <!-- 년 월 일 -->
+    <div style="margin-bottom:8px;">
+        <input class="date-input year"> 년
+        <input class="date-input month"> 월
+        <input class="date-input day"> 일
+    </div>
+
     <input class="inline recipient-input">
     <strong> 귀하</strong>
 
@@ -80,7 +99,7 @@ input {
 
 <td style="width:40%;">
     <table>
-        <tr><th colspan="2">공    급    자</th></tr>
+        <tr><th colspan="2">공 급 자</th></tr>
         <tr><td>성명</td><td>김석규</td></tr>
         <tr><td>업태</td><td>방통</td></tr>
         <tr><td>종목</td><td>미장공사</td></tr>
@@ -145,7 +164,6 @@ input {
 <td class="row-total right"></td>
 <td><input></td>
 </tr>
-</tbody>
 
 <tr>
 <td>부가세</td>
@@ -160,11 +178,12 @@ input {
 <td class="right" id="grandTotal"><strong></strong></td>
 <td></td>
 </tr>
+</tbody>
 </table>
 
 </div>
 
-<!-- ❌ 이미지/인쇄에 절대 안 찍힘 -->
+<!-- 버튼 (이미지/인쇄 제외 영역) -->
 <div style="text-align:center; margin:30px 0;">
     <button onclick="saveImage()">이미지 저장</button>
     <button onclick="window.print()">인쇄</button>
@@ -175,8 +194,8 @@ function recalc(){
     let sum = 0;
 
     document.querySelectorAll(".item-row").forEach(r=>{
-        const q = Number(r.querySelector(".qty").value);
-        const p = Number(r.querySelector(".price").value);
+        const q = parseFloat(r.querySelector(".qty").value) || 0;
+        const p = parseFloat(r.querySelector(".price").value) || 0;
 
         if(q && p){
             const t = q * p;
