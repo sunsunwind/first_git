@@ -43,7 +43,6 @@ input {
 }
 
 .inline { width: 160px; }
-.left { text-align: left; }
 .right { text-align: right; }
 </style>
 </head>
@@ -101,7 +100,31 @@ input {
 </tr>
 </thead>
 
-<tbody id="itemBody">
+<tbody>
+<tr class="item-row">
+<td><input></td>
+<td><input></td>
+<td><input class="qty" oninput="recalc()"></td>
+<td><input class="price" oninput="recalc()"></td>
+<td class="row-total right">0</td>
+<td><input></td>
+</tr>
+<tr class="item-row">
+<td><input></td>
+<td><input></td>
+<td><input class="qty" oninput="recalc()"></td>
+<td><input class="price" oninput="recalc()"></td>
+<td class="row-total right">0</td>
+<td><input></td>
+</tr>
+<tr class="item-row">
+<td><input></td>
+<td><input></td>
+<td><input class="qty" oninput="recalc()"></td>
+<td><input class="price" oninput="recalc()"></td>
+<td class="row-total right">0</td>
+<td><input></td>
+</tr>
 <tr class="item-row">
 <td><input></td>
 <td><input></td>
@@ -127,8 +150,6 @@ input {
 </tr>
 </table>
 
-<button onclick="addRow()" style="margin-top:8px;">+ 행 추가</button>
-
 </div>
 
 <div style="text-align:center; margin-top:20px;">
@@ -137,14 +158,6 @@ input {
 </div>
 
 <script>
-function addRow(){
-    const row = document.querySelector(".item-row");
-    const clone = row.cloneNode(true);
-    clone.querySelectorAll("input").forEach(i => i.value = "");
-    clone.querySelector(".row-total").innerText = "0";
-    document.getElementById("itemBody").appendChild(clone);
-}
-
 function recalc(){
     let sum = 0;
     document.querySelectorAll(".item-row").forEach(r=>{
@@ -162,7 +175,6 @@ function recalc(){
     document.getElementById("korAmount").innerText = toKor(sum) + " 원";
 }
 
-/* 한글 금액 (붙여쓰기) */
 function toKor(num){
     const n = ["영","일","이","삼","사","오","육","칠","팔","구"];
     const t = ["","십","백","천"];
