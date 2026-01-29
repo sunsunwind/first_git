@@ -18,6 +18,7 @@ h1 {
     letter-spacing: 10px;
 }
 
+/* 테이블 */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -33,17 +34,29 @@ td, th {
     text-align: left;
 }
 
+/* 기본 input */
 input {
     width: 100%;
     border: none;
     outline: none;
     background: transparent;
     font-size: 14px;
+    box-sizing: border-box;
 }
 
-/* 정렬 */
-.center-input { text-align: center !important; }
-.right-input  { text-align: right !important; }
+/* 가운데 정렬 input (품명/규격/수량) */
+.center-input {
+    text-align: center !important;
+    padding: 0 6px;     /* ← 시각적 중앙 보정 */
+}
+
+/* 우측 정렬 input (단가) */
+.right-input {
+    text-align: right !important;
+    padding-right: 8px; /* ← 들러붙음 방지 */
+}
+
+/* 우측 정렬 텍스트 */
 .right { text-align: right; }
 
 /* 귀하 */
