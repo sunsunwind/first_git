@@ -45,15 +45,10 @@ input {
 .inline { width: 160px; }
 .right { text-align: right; }
 
-/* 🔥 밑줄 입력 */
+/* 밑줄 입력 */
 .underline-input {
     border-bottom: 1px solid #000;
     text-align: left;
-}
-
-.action-area {
-    text-align: center;
-    margin-top: 20px;
 }
 </style>
 </head>
@@ -102,16 +97,32 @@ input {
 <table style="margin-top:10px;">
 <thead>
 <tr>
-<th>품명</th>
-<th>규격</th>
-<th>수량</th>
-<th>단가</th>
-<th>총액</th>
-<th>비고</th>
+<th style="width:16%">품명</th>
+<th style="width:16%">규격</th>
+<th style="width:10%">수량</th>
+<th style="width:14%">단가</th>
+<th style="width:30%">총액</th>
+<th style="width:14%">비고</th>
 </tr>
 </thead>
 
-<tbody id="itemBody">
+<tbody>
+<tr class="item-row">
+<td><input></td>
+<td><input></td>
+<td><input class="qty" oninput="recalc()"></td>
+<td><input class="price" oninput="recalc()"></td>
+<td class="row-total right"></td>
+<td><input></td>
+</tr>
+<tr class="item-row">
+<td><input></td>
+<td><input></td>
+<td><input class="qty" oninput="recalc()"></td>
+<td><input class="price" oninput="recalc()"></td>
+<td class="row-total right"></td>
+<td><input></td>
+</tr>
 <tr class="item-row">
 <td><input></td>
 <td><input></td>
@@ -145,8 +156,7 @@ input {
 </tr>
 </table>
 
-<div class="action-area">
-    <button onclick="addRow()">+ 행 추가</button>
+<div style="text-align:center; margin-top:20px;">
     <button onclick="saveImage()">이미지 저장</button>
     <button onclick="window.print()">인쇄</button>
 </div>
@@ -154,15 +164,6 @@ input {
 </div>
 
 <script>
-function addRow(){
-    const tbody = document.getElementById("itemBody");
-    const row = document.querySelector(".item-row");
-    const clone = row.cloneNode(true);
-    clone.querySelectorAll("input").forEach(i => i.value = "");
-    clone.querySelector(".row-total").innerText = "";
-    tbody.appendChild(clone);
-}
-
 function recalc(){
     let sum = 0;
 
