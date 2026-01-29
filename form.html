@@ -128,7 +128,6 @@ button {
 
 <div class="sheet" id="estimate">
 
-<!-- No / 날짜 -->
 <div style="display:flex; justify-content:space-between;">
     <div>No. <input class="inline"></div>
     <input type="date" class="inline">
@@ -160,7 +159,6 @@ button {
 </tr>
 </table>
 
-<!-- 합계 -->
 <table style="margin-top:14px;">
 <tr>
 <td style="width:30%">합계금액<br>(부가세 포함)</td>
@@ -169,13 +167,11 @@ button {
 </tr>
 </table>
 
-<!-- 품목 -->
 <table style="margin-top:14px;">
 <thead>
 <tr>
     <th style="width:26%">품명</th>
-    <th style="width:12%">규격</th>
-    <th style="width:8%">수량</th>
+    <th style="width:20%">수량</th>
     <th style="width:18%">단가</th>
     <th style="width:18%">총액</th>
     <th style="width:18%">비고</th>
@@ -184,29 +180,28 @@ button {
 
 <tbody>
 <tr class="item-row">
-<td><input></td>
-<td><input class="center-input"></td>
-<td><input class="qty center-input" oninput="formatNumber(this); recalc();"></td>
-<td><input class="price right-input" oninput="formatNumber(this); recalc();"></td>
-<td class="row-total right"></td>
-<td><input></td>
+    <td><input></td>
+    <td><input class="qty center-input" oninput="formatNumber(this); recalc();"></td>
+    <td><input class="price right-input" oninput="formatNumber(this); recalc();"></td>
+    <td class="row-total right"></td>
+    <td><input></td>
 </tr>
-<tr class="item-row"><td><input></td><td><input class="center-input"></td><td><input class="qty center-input" oninput="formatNumber(this); recalc();"></td><td><input class="price right-input" oninput="formatNumber(this); recalc();"></td><td class="row-total right"></td><td><input></td></tr>
-<tr class="item-row"><td><input></td><td><input class="center-input"></td><td><input class="qty center-input" oninput="formatNumber(this); recalc();"></td><td><input class="price right-input" oninput="formatNumber(this); recalc();"></td><td class="row-total right"></td><td><input></td></tr>
-<tr class="item-row"><td><input></td><td><input class="center-input"></td><td><input class="qty center-input" oninput="formatNumber(this); recalc();"></td><td><input class="price right-input" oninput="formatNumber(this); recalc();"></td><td class="row-total right"></td><td><input></td></tr>
-<tr class="item-row"><td><input></td><td><input class="center-input"></td><td><input class="qty center-input" oninput="formatNumber(this); recalc();"></td><td><input class="price right-input" oninput="formatNumber(this); recalc();"></td><td class="row-total right"></td><td><input></td></tr>
-<tr class="item-row"><td><input></td><td><input class="center-input"></td><td><input class="qty center-input" oninput="formatNumber(this); recalc();"></td><td><input class="price right-input" oninput="formatNumber(this); recalc();"></td><td class="row-total right"></td><td><input></td></tr>
+<tr class="item-row"><td><input></td><td><input class="qty center-input" oninput="formatNumber(this); recalc();"></td><td><input class="price right-input" oninput="formatNumber(this); recalc();"></td><td class="row-total right"></td><td><input></td></tr>
+<tr class="item-row"><td><input></td><td><input class="qty center-input" oninput="formatNumber(this); recalc();"></td><td><input class="price right-input" oninput="formatNumber(this); recalc();"></td><td class="row-total right"></td><td><input></td></tr>
+<tr class="item-row"><td><input></td><td><input class="qty center-input" oninput="formatNumber(this); recalc();"></td><td><input class="price right-input" oninput="formatNumber(this); recalc();"></td><td class="row-total right"></td><td><input></td></tr>
+<tr class="item-row"><td><input></td><td><input class="qty center-input" oninput="formatNumber(this); recalc();"></td><td><input class="price right-input" oninput="formatNumber(this); recalc();"></td><td class="row-total right"></td><td><input></td></tr>
+<tr class="item-row"><td><input></td><td><input class="qty center-input" oninput="formatNumber(this); recalc();"></td><td><input class="price right-input" oninput="formatNumber(this); recalc();"></td><td class="row-total right"></td><td><input></td></tr>
 
 <tr>
 <td>부가세</td>
-<td colspan="3"></td>
+<td colspan="2"></td>
 <td class="right" id="vat"></td>
 <td></td>
 </tr>
 
 <tr>
 <td><strong>계(부가세 포함)</strong></td>
-<td colspan="3"></td>
+<td colspan="2"></td>
 <td class="right" id="grandTotal"></td>
 <td></td>
 </tr>
