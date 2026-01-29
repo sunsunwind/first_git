@@ -12,7 +12,6 @@ h1 { text-align:center; letter-spacing:10px; }
 
 table { width:100%; border-collapse:collapse; font-size:14px; }
 td, th { border:1px solid #000; padding:6px; text-align:center; }
-
 .no-border { border:none; text-align:left; }
 
 .input {
@@ -24,19 +23,13 @@ td, th { border:1px solid #000; padding:6px; text-align:center; }
     text-align:center;
 }
 
-.inline-input {
-    width:200px;
-}
+.inline { width:160px; }
 
-.print-value {
-    display:none;
-    font-size:14px;
-}
+.print-value { display:none; }
 
-@media print {
-    .input { display:none; }
-    .print-value { display:inline; }
-}
+/* 🔥 이미지/인쇄용 모드 */
+.print-mode .input { display:none !important; }
+.print-mode .print-value { display:inline !important; }
 </style>
 </head>
 <body>
@@ -47,10 +40,10 @@ td, th { border:1px solid #000; padding:6px; text-align:center; }
 <div style="display:flex; justify-content:space-between;">
     <div>
         No.
-        <input class="input inline-input" oninput="sync(this,'noPrint')">
-        <span class="print-value" id="noPrint"></span>
+        <input class="input inline" oninput="sync(this)">
+        <span class="print-value"></span>
     </div>
-    <input type="date" class="input inline-input">
+    <input type="date" class="input inline">
 </div>
 
 <h1>견 적 서</h1>
@@ -58,9 +51,8 @@ td, th { border:1px solid #000; padding:6px; text-align:center; }
 <table>
 <tr>
 <td class="no-border" style="width:65%;">
-    <input class="input inline-input" placeholder="상호 또는 성명"
-           oninput="sync(this,'clientPrint')">
-    <span class="print-value" id="clientPrint"></span>
+    <input class="input inline" placeholder="상호 또는 성명" oninput="sync(this)">
+    <span class="print-value"></span>
     <strong> 귀하</strong>
     <div style="margin-top:10px;">아래와 같이 견적합니다.</div>
 </td>
@@ -88,18 +80,21 @@ td, th { border:1px solid #000; padding:6px; text-align:center; }
 
 <!-- 품목 -->
 <table style="margin-top:10px;">
+<thead>
 <tr>
 <th>품명</th><th>규격</th><th>수량</th><th>단가</th><th>총액</th><th>비고</th>
 </tr>
-
-<tr>
+</thead>
+<tbody id="itemBody">
+<tr class="item-row">
 <td><input class="input"></td>
 <td><input class="input"></td>
-<td><input class="input" id="qty" oninput="calculate()"></td>
-<td><input class="input" id="price" oninput="calculate()"></td>
-<td id="total">0</td>
+<td><input class="input qty" oninput="recalc()"></td>
+<td><input class="input price" oninput="recalc()"></td>
+<td class="row-total">0</td>
 <td><input class="input"></td>
 </tr>
+</tbody>
 
 <tr>
 <td>부가세</td><td colspan="3"></td>
@@ -114,74 +109,85 @@ td, th { border:1px solid #000; padding:6px; text-align:center; }
 </tr>
 </table>
 
+<button onclick="addRow()" style="margin-top:8px;">+ 행 추가</button>
+
 </div>
 
 <div style="text-align:center; margin-top:20px;">
 <button onclick="saveImage()">이미지 저장</button>
-<button onclick="window.print()">인쇄</button>
+<button onclick="printDoc()">인쇄</button>
 </div>
 
 <script>
-function sync(input, spanId) {
-    document.getElementById(spanId).innerText = input.value;
+function sync(input){
+    input.nextElementSibling.innerText = input.value;
 }
 
-function calculate() {
-    const qty = Number(qtyInput.value) || 0;
-    const price = Number(priceInput.value) || 0;
-
-    const total = qty * price;
-    const vat = Math.round(total * 0.1);
-    const grand = total + vat;
-
-    totalCell.innerText = total.toLocaleString();
-    vatCell.innerText = vat.toLocaleString();
-    grandCell.innerText = grand.toLocaleString();
-    supplyAmount.innerText = total.toLocaleString();
-    korAmount.innerText = numberToKorean(total) + " 원";
+function addRow(){
+    const row=document.querySelector(".item-row");
+    const clone=row.cloneNode(true);
+    clone.querySelectorAll("input").forEach(i=>i.value="");
+    clone.querySelector(".row-total").innerText="0";
+    document.getElementById("itemBody").appendChild(clone);
 }
 
-const qtyInput = document.getElementById("qty");
-const priceInput = document.getElementById("price");
-const totalCell = document.getElementById("total");
-const vatCell = document.getElementById("vat");
-const grandCell = document.getElementById("grandTotal");
-const supplyAmount = document.getElementById("supplyAmount");
-const korAmount = document.getElementById("korAmount");
-
-/* 숫자 → 한글 금액 */
-function numberToKorean(num) {
-    const units = ["","만","억","조"];
-    const nums = ["영","일","이","삼","사","오","육","칠","팔","구"];
-    const tens = ["","십","백","천"];
-    let result = "";
-
-    let unitIndex = 0;
-    while(num > 0) {
-        let chunk = num % 10000;
-        if(chunk > 0) {
-            let chunkStr = "";
-            for(let i=0;i<4;i++) {
-                const digit = chunk % 10;
-                if(digit > 0) chunkStr = nums[digit] + tens[i] + chunkStr;
-                chunk = Math.floor(chunk/10);
-            }
-            result = chunkStr + units[unitIndex] + " " + result;
-        }
-        num = Math.floor(num/10000);
-        unitIndex++;
-    }
-    return result.trim() || "영";
-}
-
-function saveImage() {
-    html2canvas(document.getElementById("estimate"), {scale:2})
-    .then(canvas => {
-        const link = document.createElement("a");
-        link.download = "견적서.png";
-        link.href = canvas.toDataURL();
-        link.click();
+function recalc(){
+    let sum=0;
+    document.querySelectorAll(".item-row").forEach(r=>{
+        const q=Number(r.querySelector(".qty").value)||0;
+        const p=Number(r.querySelector(".price").value)||0;
+        const t=q*p;
+        r.querySelector(".row-total").innerText=t.toLocaleString();
+        sum+=t;
     });
+
+    const vat=Math.round(sum*0.1);
+    document.getElementById("supplyAmount").innerText=sum.toLocaleString();
+    document.getElementById("vat").innerText=vat.toLocaleString();
+    document.getElementById("grandTotal").innerText=(sum+vat).toLocaleString();
+    document.getElementById("korAmount").innerText=toKor(sum)+" 원";
+}
+
+function toKor(num){
+    const n=["영","일","이","삼","사","오","육","칠","팔","구"];
+    const u=["","만","억","조"];
+    const t=["","십","백","천"];
+    let r="",i=0;
+    while(num>0){
+        let c=num%10000,s="";
+        for(let j=0;j<4;j++){
+            let d=c%10;
+            if(d) s=n[d]+t[j]+s;
+            c=Math.floor(c/10);
+        }
+        if(s) r=s+u[i]+" "+r;
+        num=Math.floor(num/10000); i++;
+    }
+    return r.trim()||"영";
+}
+
+/* 🔥 이미지 저장 핵심 */
+function saveImage(){
+    const el=document.getElementById("estimate");
+    el.classList.add("print-mode");
+    setTimeout(()=>{
+        html2canvas(el,{scale:2}).then(c=>{
+            const a=document.createElement("a");
+            a.download="견적서.png";
+            a.href=c.toDataURL();
+            a.click();
+            el.classList.remove("print-mode");
+        });
+    },100);
+}
+
+function printDoc(){
+    const el=document.getElementById("estimate");
+    el.classList.add("print-mode");
+    setTimeout(()=>{
+        window.print();
+        el.classList.remove("print-mode");
+    },100);
 }
 </script>
 
