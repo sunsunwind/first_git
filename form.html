@@ -44,11 +44,6 @@ input {
 
 .inline { width: 160px; }
 .right { text-align: right; }
-
-.action-area {
-    text-align: center;
-    margin-top: 20px;
-}
 </style>
 </head>
 <body>
@@ -105,7 +100,23 @@ input {
 </tr>
 </thead>
 
-<tbody id="itemBody">
+<tbody>
+<tr class="item-row">
+<td><input></td>
+<td><input></td>
+<td><input class="qty" oninput="recalc()"></td>
+<td><input class="price" oninput="recalc()"></td>
+<td class="row-total right"></td>
+<td><input></td>
+</tr>
+<tr class="item-row">
+<td><input></td>
+<td><input></td>
+<td><input class="qty" oninput="recalc()"></td>
+<td><input class="price" oninput="recalc()"></td>
+<td class="row-total right"></td>
+<td><input></td>
+</tr>
 <tr class="item-row">
 <td><input></td>
 <td><input></td>
@@ -139,25 +150,14 @@ input {
 </tr>
 </table>
 
-<!-- 🔥 버튼 영역 (estimate 안에 있음) -->
-<div class="action-area">
-    <button onclick="addRow()">+ 행 추가</button>
-    <button onclick="saveImage()">이미지 저장</button>
-    <button onclick="window.print()">인쇄</button>
 </div>
 
+<div style="text-align:center; margin-top:20px;">
+<button onclick="saveImage()">이미지 저장</button>
+<button onclick="window.print()">인쇄</button>
 </div>
 
 <script>
-function addRow(){
-    const tbody = document.getElementById("itemBody");
-    const row = document.querySelector(".item-row");
-    const clone = row.cloneNode(true);
-    clone.querySelectorAll("input").forEach(i => i.value = "");
-    clone.querySelector(".row-total").innerText = "";
-    tbody.appendChild(clone);
-}
-
 function recalc(){
     let sum = 0;
 
@@ -175,46 +175,47 @@ function recalc(){
     });
 
     if(sum === 0){
-        supplyAmount.innerText = "";
-        vat.innerText = "";
-        grandTotal.innerText = "";
-        korAmount.innerText = "";
+        document.getElementById("supplyAmount").innerText = "";
+        document.getElementById("vat").innerText = "";
+        document.getElementById("grandTotal").innerText = "";
+        document.getElementById("korAmount").innerText = "";
         return;
     }
 
-    const v = Math.round(sum * 0.1);
-    supplyAmount.innerText = sum.toLocaleString();
-    vat.innerText = v.toLocaleString();
-    grandTotal.innerText = (sum + v).toLocaleString();
-    korAmount.innerText = toKor(sum) + " 원";
+    const vat = Math.round(sum * 0.1);
+    document.getElementById("supplyAmount").innerText = sum.toLocaleString();
+    document.getElementById("vat").innerText = vat.toLocaleString();
+    document.getElementById("grandTotal").innerText = (sum + vat).toLocaleString();
+    document.getElementById("korAmount").innerText = toKor(sum) + " 원";
 }
 
 function toKor(num){
-    const n=["영","일","이","삼","사","오","육","칠","팔","구"];
-    const t=["","십","백","천"];
-    const u=["","만","억","조"];
-    let r="", i=0;
+    const n = ["영","일","이","삼","사","오","육","칠","팔","구"];
+    const t = ["","십","백","천"];
+    const u = ["","만","억","조"];
+    let r = "", i = 0;
 
-    while(num>0){
-        let c=num%10000, s="";
-        for(let j=0;j<4;j++){
-            const d=c%10;
-            if(d) s=n[d]+t[j]+s;
-            c=Math.floor(c/10);
+    while(num > 0){
+        let c = num % 10000;
+        let s = "";
+        for(let j=0; j<4; j++){
+            const d = c % 10;
+            if(d) s = n[d] + t[j] + s;
+            c = Math.floor(c / 10);
         }
-        if(s) r=s+u[i]+r;
-        num=Math.floor(num/10000);
+        if(s) r = s + u[i] + r;
+        num = Math.floor(num / 10000);
         i++;
     }
     return r || "영";
 }
 
 function saveImage(){
-    html2canvas(document.getElementById("estimate"), {scale:2})
+    html2canvas(document.getElementById("estimate"), { scale: 2 })
     .then(c=>{
-        const a=document.createElement("a");
-        a.download="견적서.png";
-        a.href=c.toDataURL();
+        const a = document.createElement("a");
+        a.download = "견적서.png";
+        a.href = c.toDataURL();
         a.click();
     });
 }
