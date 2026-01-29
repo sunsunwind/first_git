@@ -6,7 +6,6 @@
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
 
 <style>
-/* 기존 스타일 유지 */
 body { font-family: "Noto Sans KR", Arial; background: #f5f5f5; padding: 20px 0; font-size: 25px; }
 .sheet { width: 794px; min-height: 1123px; margin: auto; border: 2px solid #000; padding: 30px; box-sizing: border-box; background: #fff; }
 h1 { text-align: center; letter-spacing: 12px; font-size: 38px; }
@@ -82,14 +81,16 @@ button { padding: 20px 40px; font-size: 60px; font-weight: bold; cursor: pointer
     <tbody>
     <tr class="item-row">
         <td><input></td>
-        <td><input class="center-input"></td> <td><input class="center-input"></td> <td><input class="row-total-input right-input" oninput="formatNumber(this); recalc();"></td>
+        <td><input class="center-input"></td> 
+        <td><input class="right-input" oninput="formatNumber(this);"></td> 
+        <td><input class="row-total-input right-input" oninput="formatNumber(this); recalc();"></td>
         <td><input></td>
     </tr>
-    <tr class="item-row"><td><input></td><td><input class="center-input"></td><td><input class="center-input"></td><td><input class="row-total-input right-input" oninput="formatNumber(this); recalc();"></td><td><input></td></tr>
-    <tr class="item-row"><td><input></td><td><input class="center-input"></td><td><input class="center-input"></td><td><input class="row-total-input right-input" oninput="formatNumber(this); recalc();"></td><td><input></td></tr>
-    <tr class="item-row"><td><input></td><td><input class="center-input"></td><td><input class="center-input"></td><td><input class="row-total-input right-input" oninput="formatNumber(this); recalc();"></td><td><input></td></tr>
-    <tr class="item-row"><td><input></td><td><input class="center-input"></td><td><input class="center-input"></td><td><input class="row-total-input right-input" oninput="formatNumber(this); recalc();"></td><td><input></td></tr>
-    <tr class="item-row"><td><input></td><td><input class="center-input"></td><td><input class="center-input"></td><td><input class="row-total-input right-input" oninput="formatNumber(this); recalc();"></td><td><input></td></tr>
+    <tr class="item-row"><td><input></td><td><input class="center-input"></td><td><input class="right-input" oninput="formatNumber(this);"></td><td><input class="row-total-input right-input" oninput="formatNumber(this); recalc();"></td><td><input></td></tr>
+    <tr class="item-row"><td><input></td><td><input class="center-input"></td><td><input class="right-input" oninput="formatNumber(this);"></td><td><input class="row-total-input right-input" oninput="formatNumber(this); recalc();"></td><td><input></td></tr>
+    <tr class="item-row"><td><input></td><td><input class="center-input"></td><td><input class="right-input" oninput="formatNumber(this);"></td><td><input class="row-total-input right-input" oninput="formatNumber(this); recalc();"></td><td><input></td></tr>
+    <tr class="item-row"><td><input></td><td><input class="center-input"></td><td><input class="right-input" oninput="formatNumber(this);"></td><td><input class="row-total-input right-input" oninput="formatNumber(this); recalc();"></td><td><input></td></tr>
+    <tr class="item-row"><td><input></td><td><input class="center-input"></td><td><input class="right-input" oninput="formatNumber(this);"></td><td><input class="row-total-input right-input" oninput="formatNumber(this); recalc();"></td><td><input></td></tr>
 
     <tr>
     <td>부가세</td>
@@ -108,20 +109,26 @@ button { padding: 20px 40px; font-size: 60px; font-weight: bold; cursor: pointer
 </div>
 
 <div class="actions">
-    <div class="notice">* '총액' 열에 숫자를 입력하면 합계가 자동 계산됩니다.</div>
+    <div class="notice">* '단가'와 '총액'은 숫자를 입력하면 자동으로 콤마가 생성됩니다.</div>
     <button onclick="saveImage()">📷 이미지 저장</button>
     <button onclick="window.print()">🖨 인쇄</button>
 </div>
 
 <script>
-function removeComma(v){ return Number(v.replace(/,/g,"")) || 0; }
-function formatNumber(el){ const n=removeComma(el.value); el.value=n?n.toLocaleString():""; }
+function removeComma(v){ return v.toString().replace(/,/g,""); }
+function formatNumber(el){ 
+    let value = el.value.replace(/[^0-9]/g, ""); // 숫자만 남기기
+    if(value) {
+        el.value = Number(value).toLocaleString();
+    } else {
+        el.value = "";
+    }
+}
 
 function recalc(){
     let totalSum = 0;
-    // 각 행의 '총액' 입력칸 값만 모두 더함
     document.querySelectorAll(".row-total-input").forEach(input => {
-        totalSum += removeComma(input.value);
+        totalSum += Number(removeComma(input.value)) || 0;
     });
     
     if(!totalSum){ 
@@ -129,8 +136,8 @@ function recalc(){
         return;
     }
     
-    const v = Math.round(totalSum * 0.1); // 부가세 10%
-    const finalTotal = totalSum + v;      // 총합계
+    const v = Math.round(totalSum * 0.1); 
+    const finalTotal = totalSum + v;      
     
     vat.innerText = v.toLocaleString();
     grandTotal.innerText = finalTotal.toLocaleString();
