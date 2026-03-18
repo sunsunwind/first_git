@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>네이버 영수증 리뷰 생성기</title>
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        background: #f5f5f5;
+        padding: 30px;
+    }
+    .container {
+        max-width: 600px;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        margin: auto;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h1 {
+        text-align: center;
+    }
+    select, input, button, textarea {
+        width: 100%;
+        margin-top: 10px;
+        padding: 10px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+    }
+    button {
+        background: #03c75a;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+    }
+    textarea {
+        height: 150px;
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>영수증 리뷰 자동 생성기</h1>
+
+    <label>업종 선택</label>
+    <select id="type">
+        <option value="카페">카페</option>
+        <option value="식당">식당</option>
+        <option value="미용실">미용실</option>
+        <option value="네일샵">네일샵</option>
+    </select>
+
+    <label>키워드 입력 (쉼표로 구분)</label>
+    <input type="text" id="keywords" placeholder="예: 친절, 분위기 좋음, 가성비">
+
+    <label>톤 선택</label>
+    <select id="tone">
+        <option value="자연스럽게">자연스럽게</option>
+        <option value="감성적으로">감성적으로</option>
+        <option value="간단하게">간단하게</option>
+    </select>
+
+    <button onclick="generateReview()">리뷰 생성</button>
+
+    <label>결과</label>
+    <textarea id="result"></textarea>
+</div>
+
+<script>
+function generateReview() {
+    const type = document.getElementById('type').value;
+    const keywords = document.getElementById('keywords').value.split(',');
+    const tone = document.getElementById('tone').value;
+
+    const intro = [
+        "최근에 방문했는데 정말 만족스러웠어요.",
+        "지인 추천으로 방문했는데 기대 이상이었어요.",
+        "우연히 들렀는데 너무 좋았어요."
+    ];
+
+    const endings = [
+        "다음에도 꼭 다시 방문하고 싶어요!",
+        "재방문 의사 100%입니다 😊",
+        "주변에 추천하고 싶네요!"
+    ];
+
+    function random(arr) {
+        return arr[Math.floor(Math.random() * arr.length)];
+    }
+
+    let review = random(intro) + "\n";
+
+    keywords.forEach(k => {
+        if(k.trim() !== "") {
+            review += `${k.trim()} 부분이 특히 인상적이었어요. `;
+        }
+    });
+
+    if(tone === "감성적으로") {
+        review += "전체적으로 분위기도 좋고 기분 좋은 시간이었어요. ";
+    } else if(tone === "간단하게") {
+        review += "전반적으로 만족! ";
+    }
+
+    review += "\n" + random(endings);
+
+    document.getElementById('result').value = review;
+}
+</script>
+
+</body>
+</html>
