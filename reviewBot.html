@@ -2,110 +2,126 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<title>네이버 영수증 리뷰 생성기</title>
+<title>네이버 리뷰 작성 도우미</title>
+
 <style>
     body {
-        font-family: 'Arial', sans-serif;
-        background: #f5f5f5;
-        padding: 30px;
+        font-family: Arial, sans-serif;
+        background: #e8f5e9;
+        padding: 20px;
     }
+
     .container {
         max-width: 600px;
-        background: white;
-        padding: 20px;
-        border-radius: 10px;
         margin: auto;
+        background: #ffffff;
+        padding: 20px;
+        border-radius: 12px;
         box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        border-top: 8px solid #03c75a;
     }
+
     h1 {
         text-align: center;
+        color: #03c75a;
     }
-    select, input, button, textarea {
-        width: 100%;
-        margin-top: 10px;
-        padding: 10px;
-        border-radius: 5px;
-        border: 1px solid #ddd;
+
+    .section {
+        margin-top: 20px;
     }
+
     button {
+        margin: 5px 5px 0 0;
+        padding: 8px 12px;
+        border: none;
+        border-radius: 6px;
         background: #03c75a;
         color: white;
-        font-weight: bold;
         cursor: pointer;
     }
+
+    button:hover {
+        background: #02b351;
+    }
+
     textarea {
+        width: 100%;
         height: 150px;
+        margin-top: 10px;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        resize: none;
+    }
+
+    .copy-btn {
+        background: #2e7d32;
+        margin-top: 10px;
+        width: 100%;
+    }
+
+    .link-btn {
+        background: #1b5e20;
+        margin-top: 20px;
+        width: 100%;
+        font-size: 16px;
+        padding: 12px;
     }
 </style>
+
 </head>
 <body>
 
 <div class="container">
-    <h1>영수증 리뷰 자동 생성기</h1>
+    <h1>리뷰 작성 도우미</h1>
 
-    <label>업종 선택</label>
-    <select id="type">
-        <option value="카페">카페</option>
-        <option value="식당">식당</option>
-        <option value="미용실">미용실</option>
-        <option value="네일샵">네일샵</option>
-    </select>
+    <div class="section">
+        <b>🟢 시작 문장</b><br>
+        <button onclick="addText('최근에 방문했는데 정말 만족스러웠어요. ')">만족</button>
+        <button onclick="addText('지인 추천으로 방문했는데 기대 이상이었어요. ')">추천</button>
+        <button onclick="addText('우연히 들렀는데 너무 좋았어요. ')">우연</button>
+    </div>
 
-    <label>키워드 입력 (쉼표로 구분)</label>
-    <input type="text" id="keywords" placeholder="예: 친절, 분위기 좋음, 가성비">
+    <div class="section">
+        <b>🟢 장점 선택</b><br>
+        <button onclick="addText('직원분들이 정말 친절했어요. ')">친절</button>
+        <button onclick="addText('분위기가 너무 좋았어요. ')">분위기</button>
+        <button onclick="addText('가성비가 뛰어나요. ')">가성비</button>
+        <button onclick="addText('음식이 정말 맛있어요. ')">맛</button>
+        <button onclick="addText('매장이 깔끔하고 좋아요. ')">청결</button>
+    </div>
 
-    <label>톤 선택</label>
-    <select id="tone">
-        <option value="자연스럽게">자연스럽게</option>
-        <option value="감성적으로">감성적으로</option>
-        <option value="간단하게">간단하게</option>
-    </select>
+    <div class="section">
+        <b>🟢 마무리</b><br>
+        <button onclick="addText('다음에도 꼭 다시 방문할게요! ')">재방문</button>
+        <button onclick="addText('주변에 추천하고 싶어요! ')">추천하기</button>
+        <button onclick="addText('정말 만족스러운 경험이었어요 😊 ')">만족</button>
+    </div>
 
-    <button onclick="generateReview()">리뷰 생성</button>
+    <div class="section">
+        <b>📝 작성 내용</b>
+        <textarea id="review"></textarea>
+        <button class="copy-btn" onclick="copyText()">📋 복사하기</button>
+    </div>
 
-    <label>결과</label>
-    <textarea id="result"></textarea>
+    <button class="link-btn" onclick="goToNaver()">👉 네이버 리뷰 작성하러 가기</button>
 </div>
 
 <script>
-function generateReview() {
-    const type = document.getElementById('type').value;
-    const keywords = document.getElementById('keywords').value.split(',');
-    const tone = document.getElementById('tone').value;
+function addText(text) {
+    const textarea = document.getElementById('review');
+    textarea.value += text;
+}
 
-    const intro = [
-        "최근에 방문했는데 정말 만족스러웠어요.",
-        "지인 추천으로 방문했는데 기대 이상이었어요.",
-        "우연히 들렀는데 너무 좋았어요."
-    ];
+function copyText() {
+    const textarea = document.getElementById('review');
+    textarea.select();
+    document.execCommand('copy');
+    alert('복사되었습니다!');
+}
 
-    const endings = [
-        "다음에도 꼭 다시 방문하고 싶어요!",
-        "재방문 의사 100%입니다 😊",
-        "주변에 추천하고 싶네요!"
-    ];
-
-    function random(arr) {
-        return arr[Math.floor(Math.random() * arr.length)];
-    }
-
-    let review = random(intro) + "\n";
-
-    keywords.forEach(k => {
-        if(k.trim() !== "") {
-            review += `${k.trim()} 부분이 특히 인상적이었어요. `;
-        }
-    });
-
-    if(tone === "감성적으로") {
-        review += "전체적으로 분위기도 좋고 기분 좋은 시간이었어요. ";
-    } else if(tone === "간단하게") {
-        review += "전반적으로 만족! ";
-    }
-
-    review += "\n" + random(endings);
-
-    document.getElementById('result').value = review;
+function goToNaver() {
+    window.open('https://m.place.naver.com/my/review?tab=review', '_blank');
 }
 </script>
 
