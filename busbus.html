@@ -1,1 +1,226 @@
-dddd
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>☆BUS_N_WEATHER_FINAL☆</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2105_2@1.0/DungGeunMo.css">
+    <style>
+        :root {
+            --main-pink: #ff85bc;
+            --soft-pink: #ffe4f0;
+            --dark-pink: #cf3a80;
+            --white: #ffffff;
+            --starlight-glow: 0 0 10px rgba(255, 255, 255, 0.8);
+        }
+
+        body {
+            background-color: var(--main-pink);
+            background-image: radial-gradient(var(--soft-pink) 10%, transparent 11%);
+            background-size: 25px 25px;
+            font-family: 'DungGeunMo', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .window {
+            width: 370px;
+            background: var(--white);
+            border: 4px solid #000;
+            box-shadow: 10px 10px 0px rgba(0,0,0,0.2);
+        }
+
+        .title-bar {
+            background: var(--dark-pink);
+            padding: 5px 10px;
+            color: var(--white);
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 4px solid #000;
+            font-size: 12px;
+        }
+
+        /* 날씨 섹션 정밀 교정 */
+        .weather-area {
+            display: flex;
+            background: #fff;
+            border-bottom: 2px dashed #000;
+        }
+
+        .weather-col {
+            flex: 1; /* 50:50 정확한 배분 */
+            padding: 10px 5px;
+            text-align: center;
+            border-right: 1px dotted #000;
+        }
+        .weather-col:last-child { border-right: none; }
+
+        .town-name {
+            font-size: 0.9rem;
+            background: var(--soft-pink);
+            display: inline-block;
+            padding: 2px 8px;
+            margin-bottom: 8px;
+            border: 1px solid #000;
+        }
+
+        .weather-grid {
+            display: flex;
+            justify-content: space-around;
+            font-size: 0.7rem;
+        }
+
+        .weather-slot { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+        .slot-label { font-size: 0.6rem; color: #666; }
+        .weather-icon { font-size: 1.1rem; }
+
+        .content {
+            padding: 15px;
+            background: linear-gradient(to bottom, var(--soft-pink), var(--white));
+        }
+
+        .route-card {
+            background: var(--white);
+            border: 2px solid #000;
+            padding: 6px;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        .route-card h2 { margin: 0; font-size: 0.95rem; color: var(--dark-pink); }
+
+        .bus-item {
+            background: var(--white);
+            border: 2px solid #000;
+            margin-bottom: 8px;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .bus-no { font-size: 1.2rem; font-weight: bold; }
+        
+        .arrival-msg {
+            font-size: 1rem;
+            color: var(--dark-pink);
+            animation: starlight 2.5s ease-in-out infinite;
+        }
+
+        @keyframes starlight {
+            0%, 100% { opacity: 1; text-shadow: var(--starlight-glow); }
+            50% { opacity: 0.3; text-shadow: none; }
+        }
+
+        .dest-min { font-size: 0.75rem; color: #666; text-align: right; }
+
+        .status-bar {
+            background: #eee;
+            border-top: 3px solid #000;
+            padding: 5px 10px;
+            font-size: 11px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        #timer-bar { width: 50px; height: 10px; background: #ddd; border: 1px solid #000; display: inline-block; }
+        #timer-fill { height: 100%; background: var(--main-pink); width: 100%; }
+    </style>
+</head>
+<body>
+
+<div class="window">
+    <div class="title-bar">
+        <span>BUS_WEATHER_FINAL_V4.SYS</span>
+        <span>[×]</span>
+    </div>
+
+    <div class="weather-area">
+        <div class="weather-col">
+            <div class="town-name">범천동</div>
+            <div class="weather-grid">
+                <div class="weather-slot">
+                    <span class="slot-label">NOW</span>
+                    <span class="weather-icon">☀️</span>
+                    <span>18° 10%</span>
+                </div>
+                <div class="weather-slot">
+                    <span class="slot-label">20:00</span>
+                    <span class="weather-icon">🌙</span>
+                    <span>14° 0%</span>
+                </div>
+            </div>
+        </div>
+        <div class="weather-col">
+            <div class="town-name">대연3동</div>
+            <div class="weather-grid">
+                <div class="weather-slot">
+                    <span class="slot-label">NOW</span>
+                    <span class="weather-icon">⛅</span>
+                    <span>19° 20%</span>
+                </div>
+                <div class="weather-slot">
+                    <span class="slot-label">20:00</span>
+                    <span class="weather-icon">☁️</span>
+                    <span>15° 10%</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="content">
+        <div class="route-card">
+            <h2>범내골(05715) ➔ 경성대(07170)</h2>
+        </div>
+        <div id="bus-list"></div>
+    </div>
+
+    <div class="status-bar">
+        <div>REFRESH: <span id="sec-text">15</span>s <div id="timer-bar"><div id="timer-fill"></div></div></div>
+        <div id="clock">00:00:00</div>
+    </div>
+</div>
+
+<script>
+    const ROUTE_DATA = { '83': 18, '108': 20, '83-1': 19 };
+    let timeLeft = 15;
+
+    async function updateData() {
+        const busList = document.getElementById('bus-list');
+        // 시뮬레이션 데이터
+        const mockData = [
+            { no: '83', min: Math.floor(Math.random() * 5) + 2 },
+            { no: '108', min: Math.floor(Math.random() * 10) + 5 },
+            { no: '83-1', min: Math.floor(Math.random() * 8) + 3 }
+        ];
+
+        busList.innerHTML = '';
+        mockData.sort((a,b) => a.min - b.min).forEach(bus => {
+            const destTime = bus.min + ROUTE_DATA[bus.no];
+            busList.innerHTML += `
+                <div class="bus-item">
+                    <div class="bus-no">${bus.no}</div>
+                    <div style="text-align: right;">
+                        <div class="arrival-msg">${bus.min}분 뒤 도착</div>
+                        <div class="dest-min">경성대역 약 ${destTime}분 뒤</div>
+                    </div>
+                </div>
+            `;
+        });
+        timeLeft = 15;
+    }
+
+    setInterval(() => {
+        document.getElementById('clock').innerText = new Date().toLocaleTimeString();
+        timeLeft--;
+        document.getElementById('sec-text').innerText = timeLeft;
+        document.getElementById('timer-fill').style.width = (timeLeft / 15 * 100) + '%';
+        if (timeLeft <= 0) updateData();
+    }, 1000);
+
+    updateData();
+</script>
+</body>
+</html>
