@@ -2,82 +2,248 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>버스 도착 안내 서비스</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>☆BUSS_INFO_V1.0☆</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2105_2@1.0/DungGeunMo.css">
     <style>
-        body { font-family: 'Pretendard', sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 20px; }
-        .card { width: 100%; max-width: 400px; background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
-        .header { background: #2ecc71; color: white; padding: 20px; text-align: center; }
-        .header h2 { margin: 0; font-size: 1.2rem; }
-        .info-bar { background: #27ae60; padding: 10px; font-size: 0.85rem; color: #e8f5e9; text-align: center; }
-        .bus-list { padding: 15px; }
-        .bus-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #eee; }
-        .bus-name { font-weight: bold; font-size: 1.1rem; color: #333; }
-        .bus-name span { display: block; font-size: 0.7rem; color: #888; margin-top: 4px; }
-        .arrival-info { text-align: right; }
-        .time { color: #e74c3c; font-weight: bold; font-size: 1.1rem; }
-        .dest-time { font-size: 0.8rem; color: #666; margin-top: 3px; }
-        .refresh-btn { width: 100%; padding: 15px; border: none; background: #34495e; color: white; font-weight: bold; cursor: pointer; }
+        :root {
+            --y2k-pink: #ff7eb9;
+            --y2k-light-pink: #ffb7d5;
+            --y2k-dark-pink: #d4418e;
+            --y2k-blue: #70d6ff;
+            --y2k-yellow: #fffc58;
+        }
+
+        body {
+            background-color: var(--y2k-pink);
+            background-image: radial-gradient(var(--y2k-light-pink) 15%, transparent 16%),
+                              radial-gradient(var(--y2k-light-pink) 15%, transparent 16%);
+            background-size: 30px 30px;
+            background-position: 0 0, 15px 15px;
+            font-family: 'DungGeunMo', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            color: #333;
+        }
+
+        /* 메인 컨테이너 (윈도우 창 느낌) */
+        .window {
+            width: 360px;
+            background: #fff;
+            border: 3px solid #000;
+            box-shadow: 8px 8px 0px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .title-bar {
+            background: linear-gradient(90deg, var(--y2k-dark-pink), var(--y2k-pink));
+            padding: 5px 10px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid #000;
+            font-size: 14px;
+        }
+
+        .title-bar-btns span {
+            border: 1px solid #fff;
+            padding: 0 5px;
+            margin-left: 2px;
+            cursor: pointer;
+            background: #ccc;
+            color: #000;
+            box-shadow: 1px 1px 0px #000;
+        }
+
+        .content {
+            padding: 20px;
+        }
+
+        .header-box {
+            background: var(--y2k-yellow);
+            border: 2px dashed #000;
+            padding: 10px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .header-box h2 {
+            margin: 5px 0;
+            font-size: 1.1rem;
+            color: #000;
+            text-shadow: 1px 1px 0px #fff;
+        }
+
+        /* 버스 리스트 아이템 */
+        .bus-item {
+            background: #fff;
+            border: 2px solid #000;
+            margin-bottom: 12px;
+            padding: 10px;
+            position: relative;
+            transition: transform 0.1s;
+        }
+
+        .bus-item:nth-child(odd) {
+            background-color: #f0faff;
+        }
+
+        .bus-item:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 4px 4px 0px var(--y2k-blue);
+        }
+
+        .bus-no {
+            font-size: 1.5rem;
+            color: var(--y2k-dark-pink);
+            margin-bottom: 5px;
+        }
+
+        .arrival-msg {
+            font-size: 1rem;
+            color: #e74c3c;
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0; }
+        }
+
+        .dest-info {
+            font-size: 0.8rem;
+            margin-top: 8px;
+            color: #555;
+            border-top: 1px dotted #000;
+            padding-top: 5px;
+        }
+
+        /* 하단 상태창 */
+        .status-bar {
+            background: #eee;
+            border-top: 3px solid #000;
+            padding: 5px 10px;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        #timer-bar {
+            width: 50px;
+            height: 10px;
+            background: #ccc;
+            display: inline-block;
+            margin-left: 5px;
+            position: relative;
+        }
+
+        #timer-fill {
+            height: 100%;
+            background: var(--y2k-blue);
+            width: 100%;
+        }
+
+        .sticker {
+            position: absolute;
+            font-size: 2rem;
+            z-index: 10;
+        }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <div class="header">
-        <h2>범내골역 → 경성대부경대역</h2>
+<div class="sticker" style="top:10%; left:10%;">💖</div>
+<div class="sticker" style="bottom:10%; right:10%;">✨</div>
+
+<div class="window">
+    <div class="title-bar">
+        <span>BUS_FINDER.EXE</span>
+        <div class="title-bar-btns">
+            <span>_</span><span>□</span><span>×</span>
+        </div>
     </div>
-    <div class="info-bar" id="current-time">조회시간: --:--:--</div>
-    
-    <div class="bus-list" id="bus-content">
+
+    <div class="content">
+        <div class="header-box">
+            <h2>범내골(05715)</h2>
+            <div style="font-size: 0.8rem;">↓↓↓</div>
+            <h2>경성대부경대(07170)</h2>
         </div>
 
-    <button class="refresh-btn" onclick="getBusData()">새로고침 ↻</button>
+        <div id="bus-list">
+            </div>
+    </div>
+
+    <div class="status-bar">
+        <div>Update in: <span id="sec-text">15</span>s <div id="timer-bar"><div id="timer-fill"></div></div></div>
+        <div id="clock">00:00:00</div>
+    </div>
 </div>
 
 <script>
-    // 노선별 범내골(05715) -> 경성대(07170) 소요 정류장 수 (예시 데이터)
-    // 실제 API 연동 시 '노선 정보'를 통해 정류장 간 소요 시간을 합산해야 정확합니다.
-    const ROUTE_INFO = {
-        '83': { name: '83번', offset: 18 },    // 약 18분 소요 예상
-        '108': { name: '108번', offset: 20 },  // 약 20분 소요 예상
-        '83-1': { name: '83-1번', offset: 19 } // 약 19분 소요 예상
+    const ROUTE_DATA = {
+        '83': { offset: 18 },
+        '108': { offset: 20 },
+        '83-1': { offset: 19 }
     };
 
-    async function getBusData() {
-        const content = document.getElementById('bus-content');
-        document.getElementById('current-time').innerText = `조회시간: ${new Date().toLocaleTimeString()}`;
-        
-        // 실제 API 호출 시 주소 (부산 공공데이터 API 키 필요)
-        // const url = `http://apis.data.go.kr/6260000/BusanBIMS/stopArrByStopid?serviceKey=YOUR_KEY&lineid=...&stopid=500000000...`;
+    let timeLeft = 15;
 
-        // UI 시뮬레이션을 위한 데이터 (API 응답 형식 가정)
+    function updateClock() {
+        const now = new Date();
+        document.getElementById('clock').innerText = now.toLocaleTimeString();
+    }
+
+    async function fetchBusInfo() {
+        const listContainer = document.getElementById('bus-list');
+        
+        // --- 실제 API 연동 시 아래 mockData 부분을 fetch 로직으로 변경하세요 ---
+        // 임시 랜덤 데이터 생성 (시뮬레이션)
         const mockData = [
-            { no: '83', min: 5 },
-            { no: '108', min: 12 },
-            { no: '83-1', min: 8 }
+            { no: '83', min: Math.floor(Math.random() * 10) + 1 },
+            { no: '108', min: Math.floor(Math.random() * 15) + 5 },
+            { no: '83-1', min: Math.floor(Math.random() * 12) + 2 }
         ];
 
-        content.innerHTML = '';
-
-        mockData.forEach(bus => {
-            const destMin = bus.min + ROUTE_INFO[bus.no].offset;
+        listContainer.innerHTML = '';
+        mockData.sort((a, b) => a.min - b.min).forEach(bus => {
+            const destTime = bus.min + ROUTE_DATA[bus.no].offset;
             const html = `
                 <div class="bus-item">
-                    <div class="bus-name">
-                        ${ROUTE_INFO[bus.no].name}
-                        <span>범내골역(05715) 기준</span>
-                    </div>
-                    <div class="arrival-info">
-                        <div class="time">${bus.min}분 후 도착</div>
-                        <div class="dest-time">경성대역 약 ${destMin}분 후 도착</div>
+                    <div class="bus-no">★ ${bus.no} ★</div>
+                    <div class="arrival-msg">${bus.min}분 후 도착예정</div>
+                    <div class="dest-info">
+                        목적지(경성대)까지 약 ${destTime}분 소요
                     </div>
                 </div>
             `;
-            content.innerHTML += html;
+            listContainer.innerHTML += html;
         });
+        
+        timeLeft = 15; // 타이머 리셋
     }
 
+    // 1초마다 실행되는 타이머
+    setInterval(() => {
+        updateClock();
+        timeLeft--;
+        
+        // UI 업데이트
+        document.getElementById('sec-text').innerText = timeLeft;
+        document.getElementById('timer-fill').style.width = (timeLeft / 15 * 100) + '%';
+
+        if (timeLeft <= 0) {
+            fetchBusInfo();
+        }
+    }, 1000);
+
     // 초기 실행
-    getBusData();
+    fetchBusInfo();
+    updateClock();
 </script>
 
 </body>
