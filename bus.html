@@ -3,10 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>☆BUS_LIVE_FINAL_V7☆</title>
+    <title>☆BUS_N_RAIN_LIVE☆</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2105_2@1.0/DungGeunMo.css">
     <style>
-        /* (디자인 스타일은 이전과 동일 - 핑크 감성 유지) */
+        /* (기존 핑크 디자인 스타일 동일) */
         :root { --main-pink: #ff85bc; --soft-pink: #ffe4f0; --dark-pink: #cf3a80; --white: #ffffff; }
         body { background-color: var(--main-pink); font-family: 'DungGeunMo'; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 10px; box-sizing: border-box; }
         .window { width: 100%; max-width: 380px; background: var(--white); border: 4px solid #000; box-shadow: 8px 8px 0px rgba(0,0,0,0.2); }
@@ -24,13 +24,19 @@
 <body>
 
 <div class="window">
-    <div class="title-bar"><span>FINAL_EMERGENCY_FIX.EXE</span><span>[X]</span></div>
+    <div class="title-bar"><span>RAIN_PROBABILITY_LIVE.EXE</span><span>[X]</span></div>
     <div class="weather-area">
-        <div class="weather-col"><div class="town-name">범천동</div><div style="font-size:0.75rem">☀️ 18°C</div></div>
-        <div class="weather-col"><div class="town-name">대연3동</div><div style="font-size:0.75rem">⛅ 19°C</div></div>
+        <div class="weather-col" id="weather-bc">
+            <div class="town-name">범천동</div>
+            <div id="info-bc" style="font-size:0.75rem">연결 중..</div>
+        </div>
+        <div class="weather-col" id="weather-dy">
+            <div class="town-name">대연3동</div>
+            <div id="info-dy" style="font-size:0.75rem">연결 중..</div>
+        </div>
     </div>
     <div class="content">
-        <div id="bus-list"><div style="text-align:center; padding-top:40px; font-size:0.8rem;">시스템 부팅 중...</div></div>
+        <div id="bus-list"><div style="text-align:center; padding-top:40px; font-size:0.8rem;">데이터 동기화 중...</div></div>
     </div>
     <div class="status-bar">
         <div>REF: <span id="sec-text">15</span>s</div>
@@ -39,66 +45,70 @@
 </div>
 
 <script>
-    // [1] 본인의 정보로 교체
-    const BUS_KEY = '3518be1c6727b63643d44c23d2eebc692431587fae6991a090313e7fcf97cac8'; 
-    const GOOGLE_PROXY_URL = 'https://script.google.com/macros/s/AKfycby_D3QCOoz8ecXRR5IpocdV1nXbzjBsrDV_7IM3koS4naYWbwOrQeELUOXK-CTVriLDZg/exec'; 
-    
-    // [2] 정류장 번호 (05715 범내골역 경성대 방면 전용 ID)
+    // [설정] 본인의 정보
+    const API_KEY = '3518be1c6727b63643d44c23d2eebc692431587fae6991a090313e7fcf97cac8'; // 버스/날씨 공용 키
+    const GOOGLE_PROXY_URL = 'https://script.google.com/macros/s/AKfycbz14mZ2kYsnQweBW4E7ocabFDBhY3_HhwH0FsWqTlcCPgcw_FleOcvYl7tTGhX5UL1FCA/exec';
     const BSTOP_ID = '509870000'; 
     const TARGET_BUSES = ['83', '108', '83-1'];
-    const OFFSET_MAP = { '83': 18, '108': 20, '83-1': 19 };
 
     let timeLeft = 15;
 
+    // 1. 날씨 데이터 가져오기 (강수확률 POP 포함)
+    async function fetchWeather(nx, ny, elementId) {
+        const now = new Date();
+        const baseDate = now.toISOString().slice(0,10).replace(/-/g, "");
+        // 단기예보는 정해진 시간에만 업데이트되므로 안전하게 0800 데이터 사용
+        const weatherUrl = `http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=${API_KEY}&numOfRows=100&pageNo=1&base_date=${baseDate}&base_time=0800&nx=${nx}&ny=${ny}&_type=json`;
+        
+        try {
+            const response = await fetch(`${GOOGLE_PROXY_URL}?url=${encodeURIComponent(weatherUrl)}`);
+            const data = await response.json();
+            const items = data.response.body.items.item;
+            
+            // 기온(TMP)과 강수확률(POP) 찾기
+            const tmp = items.find(i => i.category === 'TMP').fcstValue;
+            const pop = items.find(i => i.category === 'POP').fcstValue;
+            
+            document.getElementById(elementId).innerHTML = `☀️ ${tmp}°C / ☔ ${pop}%`;
+        } catch (e) {
+            document.getElementById(elementId).innerHTML = `연결 대기`;
+        }
+    }
+
+    // 2. 버스 데이터 가져오기
     async function fetchBusData() {
         const busListContainer = document.getElementById('bus-list');
+        const apiAddr = `http://apis.data.go.kr/6260000/BusanBIMS/stopArrByBstopid?serviceKey=${API_KEY}&bstopid=${BSTOP_ID}&_type=json`;
         
-        // [수정 포인트] 부산 API 최신 주소 체계 적용: stopArrByBstopid (B가 추가됨)
-        const apiAddr = `http://apis.data.go.kr/6260000/BusanBIMS/stopArrByBstopid?serviceKey=${BUS_KEY}&bstopid=${BSTOP_ID}&_type=json`;
-        const finalUrl = `${GOOGLE_PROXY_URL}?url=${encodeURIComponent(apiAddr)}`;
-
         try {
-            const response = await fetch(finalUrl);
+            const response = await fetch(`${GOOGLE_PROXY_URL}?url=${encodeURIComponent(apiAddr)}`);
             const data = await response.json();
-
-            // 만약 데이터는 왔는데 에러 메시지가 담겨있을 경우
-            if (data.response && data.response.header && data.response.header.resultCode !== "00") {
-                busListContainer.innerHTML = `<div style="text-align:center; font-size:0.7rem; color:red; padding-top:40px;">API 에러: ${data.response.header.resultMsg}</div>`;
-                return;
-            }
-
             const items = data.response.body.items.item;
             const busData = Array.isArray(items) ? items : (items ? [items] : []);
             const filtered = busData.filter(bus => TARGET_BUSES.includes(String(bus.lineNo)));
             
             busListContainer.innerHTML = '';
             if (filtered.length === 0) {
-                busListContainer.innerHTML = '<div style="text-align:center; padding-top:40px; font-size:0.8rem;">운행 중인 버스가 없습니다.</div>';
+                busListContainer.innerHTML = '<div style="text-align:center; padding-top:40px;">버스 정보 없음</div>';
             } else {
                 filtered.forEach(bus => {
-                    const min = bus.min1;
                     busListContainer.innerHTML += `
                         <div class="bus-item">
                             <div style="font-weight:bold; font-size:1.2rem;">${bus.lineNo}</div>
                             <div style="text-align: right;">
-                                <div class="arrival-msg">${min}분 뒤 도착</div>
-                                <div style="font-size:0.7rem; color:#666;">경성대 약 ${min + (OFFSET_MAP[bus.lineNo] || 0)}분 뒤</div>
+                                <div class="arrival-msg">${bus.min1}분 뒤 도착</div>
+                                <div style="font-size:0.7rem; color:#666;">경성대 약 ${parseInt(bus.min1)+18}분 뒤</div>
                             </div>
                         </div>`;
                 });
             }
         } catch (e) {
-            // Api not found 등이 뜰 경우 어떤 주소에서 에러 났는지 화면에 표시
-            busListContainer.innerHTML = `<div style="text-align:center; font-size:0.6rem; color:red; padding-top:40px;">
-                주소를 찾을 수 없습니다.<br>
-                1. API 키 활성화 확인 (1~2시간 소요)<br>
-                2. 구글 스크립트 배포 상태 확인
-            </div>`;
+            busListContainer.innerHTML = '<div style="text-align:center; font-size:0.7rem; padding-top:40px;">연결 시도 중...</div>';
         }
         timeLeft = 15;
     }
 
-    // 루프 설정
+    // 시계 및 루프
     setInterval(() => {
         document.getElementById('clock').innerText = new Date().toLocaleTimeString();
         timeLeft--;
@@ -106,6 +116,9 @@
         if (timeLeft === 0) fetchBusData();
     }, 1000);
 
+    // 초기 실행
+    fetchWeather(97, 75, 'info-bc'); // 범천동 좌표
+    fetchWeather(98, 75, 'info-dy'); // 대연3동 좌표
     fetchBusData();
 </script>
 </body>
