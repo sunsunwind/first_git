@@ -1,174 +1,135 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>☆BUS_RAIN_LIVE_FINAL☆</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2105_2@1.0/DungGeunMo.css">
-    <style>
-        :root {
-            --main-pink: #ff85bc;
-            --soft-pink: #ffe4f0;
-            --dark-pink: #cf3a80;
-            --white: #ffffff;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BUS + WEATHER FINAL</title>
 
-        body {
-            background-color: var(--main-pink);
-            background-image: radial-gradient(var(--soft-pink) 10%, transparent 11%);
-            background-size: 20px 20px;
-            font-family: 'DungGeunMo', sans-serif;
-            display: flex; justify-content: center; align-items: center; 
-            min-height: 100vh; margin: 0; padding: 10px; box-sizing: border-box;
-        }
-
-        .window { 
-            width: 100%; max-width: 380px; 
-            background: var(--white); border: 4px solid #000; 
-            box-shadow: 8px 8px 0px rgba(0,0,0,0.2); 
-        }
-
-        .title-bar { background: var(--dark-pink); padding: 6px 10px; color: var(--white); display: flex; justify-content: space-between; border-bottom: 4px solid #000; font-size: 11px; }
-
-        .weather-area { display: flex; background: #fff; border-bottom: 2px dashed #000; }
-        .weather-col { flex: 1; padding: 12px 0; text-align: center; border-right: 1px dotted #000; }
-        .weather-col:last-child { border-right: none; }
-        .town-name { font-size: 0.85rem; background: var(--soft-pink); display: inline-block; padding: 2px 8px; margin-bottom: 6px; border: 1px solid #000; }
-
-        .content { padding: 15px; background: linear-gradient(to bottom, var(--soft-pink), var(--white)); min-height: 250px; }
-        .route-card { background: var(--white); border: 2px solid #000; padding: 8px; margin-bottom: 12px; text-align: center; }
-        .route-card h2 { margin: 0; font-size: 0.85rem; color: var(--dark-pink); }
-
-        .bus-item { background: var(--white); border: 2px solid #000; margin-bottom: 10px; padding: 12px; display: flex; justify-content: space-between; align-items: center; }
-        .bus-no { font-size: 1.2rem; font-weight: bold; }
-        .arrival-msg { font-size: 1rem; color: var(--dark-pink); animation: starlight 2.5s infinite; }
-        @keyframes starlight { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
-        
-        .status-bar { background: #eee; border-top: 3px solid #000; padding: 8px 10px; font-size: 10px; display: flex; justify-content: space-between; align-items: center; }
-    </style>
+<style>
+body { background:#ff85bc; font-family:sans-serif; display:flex; justify-content:center; align-items:center; height:100vh; margin:0;}
+.box { width:360px; background:#fff; border:3px solid #000; padding:10px;}
+.bus { border:1px solid #000; padding:8px; margin-bottom:6px;}
+</style>
 </head>
+
 <body>
+<div class="box">
+  <h3>🚌 BUS + 🌤 WEATHER</h3>
 
-<div class="window">
-    <div class="title-bar"><span>RAIN_BUS_STATION.EXE</span><span>[X]</span></div>
+  <div>범천동: <span id="bc">--</span></div>
+  <div>대연3동: <span id="dy">--</span></div>
 
-    <div class="weather-area">
-        <div class="weather-col">
-            <div class="town-name">범천동</div>
-            <div id="info-bc" style="font-size:0.75rem">데이터 연결 중</div>
-        </div>
-        <div class="weather-col">
-            <div class="town-name">대연3동</div>
-            <div id="info-dy" style="font-size:0.75rem">데이터 연결 중</div>
-        </div>
-    </div>
+  <hr>
+  <div id="bus">불러오는 중...</div>
 
-    <div class="content">
-        <div class="route-card">
-            <h2>범내골(05715) ➔ 경성대</h2>
-        </div>
-        <div id="bus-list">
-            <div style="text-align:center; padding-top:40px; font-size:0.8rem; color:#888;">실시간 연결 시도 중...</div>
-        </div>
-    </div>
-
-    <div class="status-bar">
-        <div>REFRESH: <span id="sec-text">15</span>s</div>
-        <div id="clock">00:00:00</div>
-    </div>
+  <hr>
+  <div>⏱ <span id="sec">15</span>s</div>
+  <div id="clock"></div>
 </div>
 
 <script>
-    // [1] 본인의 정보를 입력하세요 (디코딩 키도 OK)
-    const API_KEY = '3518be1c6727b63643d44c23d2eebc692431587fae6991a090313e7fcf97cac8'; 
-    const GOOGLE_PROXY_URL = 'https://script.google.com/macros/s/AKfycbwCa2Iaf0UV5zx3LTxZceUYNTnHcSMhhKdcEPBbVuSCwiBhjCHWMIEw4N1NzyaYkERlwQ/exec'; // 전체 주소
-    const BSTOP_ID = '509870000'; // 범내골역 경성대 방면
-    const TARGET_BUSES = ['83', '108', '83-1'];
+const API_KEY = '3518be1c6727b63643d44c23d2eebc692431587fae6991a090313e7fcf97cac8';
+const PROXY = 'https://script.google.com/macros/s/AKfycbwCa2Iaf0UV5zx3LTxZceUYNTnHcSMhhKdcEPBbVuSCwiBhjCHWMIEw4N1NzyaYkERlwQ/exec';
 
-    let timeLeft = 15;
+const BSTOP_ID = '509870000';
+const TARGET = ['83','108','83-1'];
 
-    // 키를 안전하게 변환하는 장치
-    const safeKey = encodeURIComponent(API_KEY);
+let t = 15;
 
-    // 날씨 시간 계산 (현재 19시 기준 보정)
-    function getBaseTime() {
-        const now = new Date();
-        const hour = now.getHours();
-        const baseTimes = [2, 5, 8, 11, 14, 17, 20, 23];
-        let closest = baseTimes.filter(t => t <= hour).pop() || 23;
-        return String(closest).padStart(2, '0') + "00";
+// ✅ base_time 자동 계산
+function getBaseTime() {
+  const now = new Date();
+  const hour = now.getHours();
+
+  const times = [2,5,8,11,14,17,20,23];
+  let base = '2300';
+
+  for (let i = times.length - 1; i >= 0; i--) {
+    if (hour >= times[i]) {
+      base = String(times[i]).padStart(2,'0') + '00';
+      break;
+    }
+  }
+  return base;
+}
+
+// ✅ fetch 공통
+async function call(api) {
+  const res = await fetch(PROXY + '?url=' + encodeURIComponent(api));
+  return await res.json();
+}
+
+// ✅ 날씨
+async function weather(nx, ny, el) {
+  try {
+    const date = new Date().toISOString().slice(0,10).replace(/-/g,'');
+    const time = getBaseTime();
+
+    const url = `https://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=${encodeURIComponent(API_KEY)}&numOfRows=60&pageNo=1&base_date=${date}&base_time=${time}&nx=${nx}&ny=${ny}&_type=json`;
+
+    const data = await call(url);
+    const items = data.response.body.items.item;
+
+    const tmp = items.find(i=>i.category==='TMP')?.fcstValue ?? '--';
+    const pop = items.find(i=>i.category==='POP')?.fcstValue ?? '--';
+
+    document.getElementById(el).innerText = `${tmp}°C / ${pop}%`;
+  } catch(e) {
+    document.getElementById(el).innerText = '에러';
+  }
+}
+
+// ✅ 버스
+async function bus() {
+  try {
+    const url = `https://apis.data.go.kr/6260000/BusanBIMS/stopArrByBstopid?serviceKey=${encodeURIComponent(API_KEY)}&bstopid=${BSTOP_ID}&_type=json`;
+
+    const data = await call(url);
+    let items = data.response?.body?.items?.item;
+
+    if (!items) throw 'no data';
+    if (!Array.isArray(items)) items = [items];
+
+    const list = items.filter(b => TARGET.includes(String(b.lineNo)));
+
+    const el = document.getElementById('bus');
+
+    if (list.length === 0) {
+      el.innerHTML = '버스 없음';
+      return;
     }
 
-    async function fetchWeather(nx, ny, elementId) {
-        const now = new Date();
-        const baseDate = now.getFullYear() + String(now.getMonth() + 1).padStart(2, '0') + String(now.getDate()).padStart(2, '0');
-        const baseTime = getBaseTime();
+    el.innerHTML = '';
+    list.forEach(b=>{
+      el.innerHTML += `<div class="bus">${b.lineNo} → ${b.min1}분</div>`;
+    });
 
-        const url = `http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getVilageFcst?serviceKey=${safeKey}&numOfRows=50&pageNo=1&base_date=${baseDate}&base_time=${baseTime}&nx=${nx}&ny=${ny}&_type=json`;
-        
-        try {
-            const response = await fetch(`${GOOGLE_PROXY_URL}?url=${encodeURIComponent(url)}`);
-            const data = await response.json();
-            const items = data.response.body.items.item;
-            
-            const tmp = items.find(i => i.category === 'TMP').fcstValue;
-            const pop = items.find(i => i.category === 'POP').fcstValue;
-            
-            document.getElementById(elementId).innerHTML = `☀️ ${tmp}°C / ☔ ${pop}%`;
-        } catch (e) {
-            document.getElementById(elementId).innerHTML = `연결 대기`;
-        }
-    }
+  } catch(e) {
+    document.getElementById('bus').innerText = '에러';
+  }
+}
 
-    async function fetchBusData() {
-        const busListContainer = document.getElementById('bus-list');
-        const url = `http://apis.data.go.kr/6260000/BusanBIMS/stopArrByBstopid?serviceKey=${safeKey}&bstopid=${BSTOP_ID}&_type=json`;
+// ✅ 전체 업데이트
+function update() {
+  weather(97,75,'bc');
+  weather(98,75,'dy');
+  bus();
+}
 
-        try {
-            const response = await fetch(`${GOOGLE_PROXY_URL}?url=${encodeURIComponent(url)}`);
-            const data = await response.json();
-            
-            const items = data.response?.body?.items?.item;
-            const busData = Array.isArray(items) ? items : (items ? [items] : []);
-            const filtered = busData.filter(bus => TARGET_BUSES.includes(String(bus.lineNo)));
-            
-            busListContainer.innerHTML = '';
-            if (filtered.length === 0) {
-                busListContainer.innerHTML = '<div style="text-align:center; padding-top:40px; font-size:0.8rem;">현재 운행 정보 없음</div>';
-            } else {
-                filtered.forEach(bus => {
-                    const min = bus.min1;
-                    busListContainer.innerHTML += `
-                        <div class="bus-item">
-                            <div class="bus-no">${bus.lineNo}</div>
-                            <div style="text-align: right;">
-                                <div class="arrival-msg">${min}분 뒤 도착</div>
-                                <div style="font-size:0.7rem; color:#666;">경성대 약 ${parseInt(min)+18}분 뒤</div>
-                            </div>
-                        </div>`;
-                });
-            }
-        } catch (e) {
-            busListContainer.innerHTML = '<div style="text-align:center; font-size:0.7rem; padding-top:40px;">데이터 대기 중...</div>';
-        }
-        timeLeft = 15;
-    }
+// ✅ 타이머
+setInterval(()=>{
+  document.getElementById('clock').innerText = new Date().toLocaleTimeString();
 
-    setInterval(() => {
-        document.getElementById('clock').innerText = new Date().toLocaleTimeString();
-        timeLeft--;
-        document.getElementById('sec-text').innerText = (timeLeft < 0) ? 0 : timeLeft;
-        if (timeLeft === 0) {
-            fetchBusData();
-            fetchWeather(97, 75, 'info-bc');
-            fetchWeather(98, 75, 'info-dy');
-        }
-    }, 1000);
+  t--;
+  if(t<=0){
+    t=15;
+    update();
+  }
+  document.getElementById('sec').innerText = t;
 
-    // 최초 실행
-    fetchWeather(97, 75, 'info-bc');
-    fetchWeather(98, 75, 'info-dy');
-    fetchBusData();
+},1000);
+
+update();
 </script>
 </body>
 </html>
