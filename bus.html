@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>버스 도착 안내 서비스</title>
+    <style>
+        body { font-family: 'Pretendard', sans-serif; background: #f0f2f5; display: flex; justify-content: center; padding: 20px; }
+        .card { width: 100%; max-width: 400px; background: white; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
+        .header { background: #2ecc71; color: white; padding: 20px; text-align: center; }
+        .header h2 { margin: 0; font-size: 1.2rem; }
+        .info-bar { background: #27ae60; padding: 10px; font-size: 0.85rem; color: #e8f5e9; text-align: center; }
+        .bus-list { padding: 15px; }
+        .bus-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #eee; }
+        .bus-name { font-weight: bold; font-size: 1.1rem; color: #333; }
+        .bus-name span { display: block; font-size: 0.7rem; color: #888; margin-top: 4px; }
+        .arrival-info { text-align: right; }
+        .time { color: #e74c3c; font-weight: bold; font-size: 1.1rem; }
+        .dest-time { font-size: 0.8rem; color: #666; margin-top: 3px; }
+        .refresh-btn { width: 100%; padding: 15px; border: none; background: #34495e; color: white; font-weight: bold; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div class="header">
+        <h2>범내골역 → 경성대부경대역</h2>
+    </div>
+    <div class="info-bar" id="current-time">조회시간: --:--:--</div>
+    
+    <div class="bus-list" id="bus-content">
+        </div>
+
+    <button class="refresh-btn" onclick="getBusData()">새로고침 ↻</button>
+</div>
+
+<script>
+    // 노선별 범내골(05715) -> 경성대(07170) 소요 정류장 수 (예시 데이터)
+    // 실제 API 연동 시 '노선 정보'를 통해 정류장 간 소요 시간을 합산해야 정확합니다.
+    const ROUTE_INFO = {
+        '83': { name: '83번', offset: 18 },    // 약 18분 소요 예상
+        '108': { name: '108번', offset: 20 },  // 약 20분 소요 예상
+        '83-1': { name: '83-1번', offset: 19 } // 약 19분 소요 예상
+    };
+
+    async function getBusData() {
+        const content = document.getElementById('bus-content');
+        document.getElementById('current-time').innerText = `조회시간: ${new Date().toLocaleTimeString()}`;
+        
+        // 실제 API 호출 시 주소 (부산 공공데이터 API 키 필요)
+        // const url = `http://apis.data.go.kr/6260000/BusanBIMS/stopArrByStopid?serviceKey=YOUR_KEY&lineid=...&stopid=500000000...`;
+
+        // UI 시뮬레이션을 위한 데이터 (API 응답 형식 가정)
+        const mockData = [
+            { no: '83', min: 5 },
+            { no: '108', min: 12 },
+            { no: '83-1', min: 8 }
+        ];
+
+        content.innerHTML = '';
+
+        mockData.forEach(bus => {
+            const destMin = bus.min + ROUTE_INFO[bus.no].offset;
+            const html = `
+                <div class="bus-item">
+                    <div class="bus-name">
+                        ${ROUTE_INFO[bus.no].name}
+                        <span>범내골역(05715) 기준</span>
+                    </div>
+                    <div class="arrival-info">
+                        <div class="time">${bus.min}분 후 도착</div>
+                        <div class="dest-time">경성대역 약 ${destMin}분 후 도착</div>
+                    </div>
+                </div>
+            `;
+            content.innerHTML += html;
+        });
+    }
+
+    // 초기 실행
+    getBusData();
+</script>
+
+</body>
+</html>
